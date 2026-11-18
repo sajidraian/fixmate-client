@@ -81,5 +81,15 @@ export const auth = betterAuth({
   },
 
   // JWT Plugin
-  plugins: [jwt()],
+ plugins: [
+  jwt({
+    jwt: {
+      definePayload: ({ user }) => ({
+        id: user.id,
+        email: user.email,
+        role: (user as typeof user & { role?: string }).role ?? "customer",
+      }),
+    },
+  }),
+],
 });
