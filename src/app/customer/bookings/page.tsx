@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -25,6 +26,8 @@ export default function CustomerBookingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [cancellingId, setCancellingId] = useState("");
+  const [payingId, setPayingId] = useState("");
+  const [paymentMessage, setPaymentMessage] = useState("");
 
   const fetchBookings = async () => {
     try {
@@ -40,6 +43,16 @@ export default function CustomerBookingsPage() {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("payment") === "success") {
+      setPaymentMessage(
+        "Payment submitted successfully! Your payment status will update after verification."
+      );
+    } else if (params.get("payment") === "cancelled") {
+      setPaymentMessage("Payment was cancelled. You can try again anytime.");
+    }
+
     fetchBookings();
   }, []);
 
@@ -67,6 +80,36 @@ export default function CustomerBookingsPage() {
     }
   };
 
+  const handlePayment = async (bookingId: string) => {
+    try {
+      setPayingId(bookingId);
+      setError("");
+
+      const result = await authenticatedFetch(
+        "/api/payments/create-checkout-session",
+        {
+          method: "POST",
+          body: JSON.stringify({ bookingId }),
+        }
+      );
+
+      const checkoutUrl = result.data?.checkoutUrl;
+
+      if (!checkoutUrl) {
+        throw new Error("Stripe checkout URL was not generated.");
+      }
+
+      window.location.assign(checkoutUrl);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to start payment."
+      );
+      setPayingId("");
+    }
+  };
+
   const statusColor = (status: string) => {
     switch (status) {
       case "completed":
@@ -91,9 +134,11 @@ export default function CustomerBookingsPage() {
             <p className="text-[#B8F36B] text-sm font-semibold tracking-widest uppercase">
               Customer Dashboard
             </p>
+
             <h1 className="text-3xl md:text-4xl font-bold mt-3">
               My Bookings
             </h1>
+
             <p className="text-gray-400 mt-2">
               Track and manage your repair service requests.
             </p>
@@ -107,6 +152,12 @@ export default function CustomerBookingsPage() {
           </Link>
         </div>
 
+        {paymentMessage && (
+          <div className="mb-6 rounded-xl border border-[#B8F36B]/30 bg-[#B8F36B]/10 p-4 text-[#B8F36B]">
+            {paymentMessage}
+          </div>
+        )}
+
         {loading && (
           <p className="text-center text-[#B8F36B] py-20">
             Loading your bookings...
@@ -114,7 +165,7 @@ export default function CustomerBookingsPage() {
         )}
 
         {error && (
-          <div className="bg-red-400/10 text-red-400 p-4 rounded-xl">
+          <div className="bg-red-400/10 text-red-400 p-4 rounded-xl mb-6">
             {error}
           </div>
         )}
@@ -122,10 +173,13 @@ export default function CustomerBookingsPage() {
         {!loading && !error && bookings.length === 0 && (
           <div className="text-center bg-[#111827] border border-gray-800 rounded-2xl p-12">
             <div className="text-5xl mb-5">🔧</div>
+
             <h2 className="text-2xl font-bold">No bookings yet</h2>
+
             <p className="text-gray-400 mt-3">
               Find a service and book your first repair.
             </p>
+
             <Link
               href="/services"
               className="inline-block mt-6 bg-[#B8F36B] text-[#080D19] px-6 py-3 rounded-xl font-bold"
@@ -179,13 +233,17 @@ export default function CustomerBookingsPage() {
                       <p className="text-gray-400">
                         Preferred Date:{" "}
                         <span className="text-white">
-                          {new Date(booking.preferredDate).toLocaleString()}
+                          {new Date(
+                            booking.preferredDate
+                          ).toLocaleString()}
                         </span>
                       </p>
 
                       <p className="text-gray-400">
                         Address:{" "}
-                        <span className="text-white">{booking.address}</span>
+                        <span className="text-white">
+                          {booking.address}
+                        </span>
                       </p>
 
                       <p className="text-gray-400">
@@ -203,6 +261,7 @@ export default function CustomerBookingsPage() {
                             ? "Final Amount"
                             : "Estimated Price"}
                         </p>
+
                         <p className="text-2xl font-bold text-[#B8F36B]">
                           ৳
                           {booking.status === "completed"
@@ -211,17 +270,40 @@ export default function CustomerBookingsPage() {
                         </p>
                       </div>
 
-                      {booking.status === "requested" && (
-                        <button
-                          onClick={() => handleCancel(booking._id)}
-                          disabled={cancellingId === booking._id}
-                          className="border border-red-400 text-red-400 px-5 py-2.5 rounded-xl hover:bg-red-400 hover:text-white transition disabled:opacity-50"
-                        >
-                          {cancellingId === booking._id
-                            ? "Cancelling..."
-                            : "Cancel Booking"}
-                        </button>
-                      )}
+                      <div className="flex flex-wrap gap-3">
+                        {booking.status === "requested" && (
+                          <button
+                            onClick={() => handleCancel(booking._id)}
+                            disabled={cancellingId === booking._id}
+                            className="border border-red-400 text-red-400 px-5 py-2.5 rounded-xl hover:bg-red-400 hover:text-white transition disabled:opacity-50"
+                          >
+                            {cancellingId === booking._id
+                              ? "Cancelling..."
+                              : "Cancel Booking"}
+                          </button>
+                        )}
+
+                        {booking.status === "completed" &&
+                          booking.paymentStatus !== "paid" && (
+                            <button
+                              onClick={() =>
+                                handlePayment(booking._id)
+                              }
+                              disabled={payingId === booking._id}
+                              className="bg-[#B8F36B] text-[#080D19] px-6 py-2.5 rounded-xl font-bold hover:bg-white transition disabled:opacity-50"
+                            >
+                              {payingId === booking._id
+                                ? "Redirecting..."
+                                : "Pay Now →"}
+                            </button>
+                          )}
+
+                        {booking.paymentStatus === "paid" && (
+                          <span className="bg-[#B8F36B]/10 text-[#B8F36B] px-5 py-2.5 rounded-xl font-semibold">
+                            ✓ Payment Completed
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
