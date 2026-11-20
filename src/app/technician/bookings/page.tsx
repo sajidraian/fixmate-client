@@ -26,7 +26,7 @@ export default function TechnicianBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+const [updatingId, setUpdatingId] = useState<string | null>(null);
   useEffect(() => {
     const loadBookings = async () => {
       try {
@@ -43,7 +43,60 @@ export default function TechnicianBookingsPage() {
 
     loadBookings();
   }, []);
+const handleStatusUpdate = async (
+  bookingId: string,
+  status: string
+) => {
+  let finalAmount: number | undefined;
 
+  if (status === "completed") {
+    const amount = prompt("Enter the final repair amount (BDT):");
+
+    if (amount === null) return;
+
+    finalAmount = Number(amount);
+
+    if (!Number.isFinite(finalAmount) || finalAmount <= 0) {
+      alert("Please enter a valid amount greater than zero.");
+      return;
+    }
+  }
+
+  try {
+    setUpdatingId(bookingId);
+
+    const body: { status: string; finalAmount?: number } = { status };
+
+    if (finalAmount !== undefined) {
+      body.finalAmount = finalAmount;
+    }
+
+    await authenticatedFetch(`/api/bookings/${bookingId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+
+    setBookings((previous) =>
+      previous.map((booking) =>
+        booking._id === bookingId
+          ? {
+              ...booking,
+              status,
+              ...(finalAmount !== undefined ? { finalAmount } : {}),
+            }
+          : booking
+      )
+    );
+
+    alert("Booking status updated successfully!");
+  } catch (err) {
+    alert(
+      err instanceof Error ? err.message : "Failed to update booking."
+    );
+  } finally {
+    setUpdatingId(null);
+  }
+};
   const statusStyle: Record<string, string> = {
     requested: "bg-yellow-400/10 text-yellow-400",
     accepted: "bg-blue-400/10 text-blue-400",
@@ -168,6 +221,53 @@ export default function TechnicianBookingsPage() {
                     {booking.problemDescription}
                   </p>
                 </div>
+                <div className="mt-6 flex flex-wrap gap-3">
+  {booking.status === "requested" && (
+    <>
+      <button
+        onClick={() => handleStatusUpdate(booking._id, "accepted")}
+        disabled={updatingId === booking._id}
+        className="rounded-xl bg-[#B8F36B] px-5 py-3 font-bold text-[#080D19] transition hover:bg-white disabled:opacity-50"
+      >
+        Accept Booking
+      </button>
+
+      <button
+        onClick={() => handleStatusUpdate(booking._id, "rejected")}
+        disabled={updatingId === booking._id}
+        className="rounded-xl border border-red-400 px-5 py-3 font-bold text-red-400 transition hover:bg-red-400 hover:text-white disabled:opacity-50"
+      >
+        Reject Booking
+      </button>
+    </>
+  )}
+
+  {booking.status === "accepted" && (
+    <button
+      onClick={() => handleStatusUpdate(booking._id, "in-progress")}
+      disabled={updatingId === booking._id}
+      className="rounded-xl bg-blue-500 px-5 py-3 font-bold text-white transition hover:bg-blue-400 disabled:opacity-50"
+    >
+      Start Repair
+    </button>
+  )}
+
+  {booking.status === "in-progress" && (
+    <button
+      onClick={() => handleStatusUpdate(booking._id, "completed")}
+      disabled={updatingId === booking._id}
+      className="rounded-xl bg-green-500 px-5 py-3 font-bold text-white transition hover:bg-green-400 disabled:opacity-50"
+    >
+      Complete Repair
+    </button>
+  )}
+
+  {updatingId === booking._id && (
+    <span className="self-center text-sm text-gray-400">
+      Updating...
+    </span>
+  )}
+</div>
               </article>
             ))}
           </div>
