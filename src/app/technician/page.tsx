@@ -67,21 +67,28 @@ export default function TechnicianDashboard() {
           <p className="text-gray-400 mt-3">{user.email}</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-5 mt-12">
-          {[
-            { title: "My Services", value: "Manage Services" },
-            { title: "Booking Requests", value: "View Requests" },
-            { title: "My Earnings", value: "Track Earnings" },
-          ].map((item) => (
-            <div
-              key={item.title}
-              className="bg-[#111B2D] border border-gray-800 rounded-2xl p-7"
-            >
-              <h2 className="text-gray-400 text-sm">{item.title}</h2>
-              <p className="text-xl font-bold mt-4">{item.value}</p>
-            </div>
-          ))}
-        </div>
+<div className="grid md:grid-cols-3 gap-5 mt-12">
+  <Link
+    href="/technician/services"
+    className="bg-[#111B2D] border border-gray-800 rounded-2xl p-7 hover:border-lime-300 transition"
+  >
+    <h2 className="text-gray-400 text-sm">My Services</h2>
+    <p className="text-xl font-bold mt-4">Manage Services →</p>
+  </Link>
+
+  <Link
+    href="/technician/bookings"
+    className="bg-[#111B2D] border border-gray-800 rounded-2xl p-7 hover:border-lime-300 transition"
+  >
+    <h2 className="text-gray-400 text-sm">Booking Requests</h2>
+    <p className="text-xl font-bold mt-4">View Requests →</p>
+  </Link>
+
+  <div className="bg-[#111B2D] border border-gray-800 rounded-2xl p-7">
+    <h2 className="text-gray-400 text-sm">My Earnings</h2>
+    <p className="text-xl font-bold mt-4">Track Earnings</p>
+  </div>
+</div>
       </div>
     </main>
   );
