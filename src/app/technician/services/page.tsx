@@ -18,6 +18,7 @@ export default function AddServicePage() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -32,6 +33,77 @@ export default function AddServicePage() {
     });
   };
 
+  // Upload image to ImgBB
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setMessage("");
+    setError("");
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please select a valid image file.");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image size must be less than 5MB.");
+      e.target.value = "";
+      return;
+    }
+
+    setImageUploading(true);
+
+    try {
+      const base64Image: string = await new Promise(
+        (resolve, reject) => {
+          const reader = new FileReader();
+
+          reader.onload = () => {
+            if (typeof reader.result === "string") {
+              resolve(reader.result);
+            } else {
+              reject(new Error("Could not read image."));
+            }
+          };
+
+          reader.onerror = () => {
+            reject(new Error("Failed to read image."));
+          };
+
+          reader.readAsDataURL(file);
+        }
+      );
+
+      const result = await authenticatedFetch("/api/uploads/image", {
+        method: "POST",
+        body: JSON.stringify({
+          image: base64Image,
+        }),
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        image: result.data.url,
+      }));
+
+      setMessage("Image uploaded successfully!");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Image upload failed."
+      );
+    } finally {
+      setImageUploading(false);
+      e.target.value = "";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -40,6 +112,12 @@ export default function AddServicePage() {
     setError("");
 
     try {
+      if (!formData.image) {
+        setError("Please upload a service image first.");
+        setLoading(false);
+        return;
+      }
+
       const result = await authenticatedFetch("/api/services", {
         method: "POST",
         body: JSON.stringify({
@@ -63,7 +141,9 @@ export default function AddServicePage() {
       });
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Something went wrong."
+        err instanceof Error
+          ? err.message
+          : "Something went wrong."
       );
     } finally {
       setLoading(false);
@@ -102,7 +182,9 @@ export default function AddServicePage() {
           className="bg-[#111B2D] border border-gray-800 rounded-3xl p-6 md:p-9 space-y-5"
         >
           <div>
-            <label className="block mb-2 text-sm">Service Title</label>
+            <label className="block mb-2 text-sm">
+              Service Title
+            </label>
             <input
               required
               name="title"
@@ -114,7 +196,9 @@ export default function AddServicePage() {
           </div>
 
           <div>
-            <label className="block mb-2 text-sm">Category</label>
+            <label className="block mb-2 text-sm">
+              Category
+            </label>
             <select
               name="category"
               value={formData.category}
@@ -130,7 +214,9 @@ export default function AddServicePage() {
           </div>
 
           <div>
-            <label className="block mb-2 text-sm">Description</label>
+            <label className="block mb-2 text-sm">
+              Description
+            </label>
             <textarea
               required
               name="description"
@@ -142,17 +228,43 @@ export default function AddServicePage() {
             />
           </div>
 
+          {/* ImgBB Image Upload */}
           <div>
-            <label className="block mb-2 text-sm">Image URL</label>
+            <label className="block mb-2 text-sm">
+              Service Image
+            </label>
+
             <input
-              required
-              type="url"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              placeholder="https://example.com/image.jpg"
-              className={inputClass}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={imageUploading}
+              className={`${inputClass} file:mr-4 file:rounded-lg file:border-0 file:bg-lime-300 file:px-4 file:py-2 file:font-semibold file:text-[#080D19]`}
             />
+
+            <p className="text-xs text-gray-400 mt-2">
+              Upload an image (Maximum size: 5MB).
+            </p>
+
+            {imageUploading && (
+              <p className="text-lime-300 mt-3 text-sm">
+                Uploading image to ImgBB...
+              </p>
+            )}
+
+            {formData.image && (
+              <div className="mt-4">
+                <img
+                  src={formData.image}
+                  alt="Service preview"
+                  className="w-full max-h-64 object-cover rounded-xl border border-gray-700"
+                />
+
+                <p className="text-lime-300 text-sm mt-2">
+                  ✓ Image uploaded successfully
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="grid md:grid-cols-2 gap-5">
@@ -188,7 +300,9 @@ export default function AddServicePage() {
           </div>
 
           <div>
-            <label className="block mb-2 text-sm">Service Mode</label>
+            <label className="block mb-2 text-sm">
+              Service Mode
+            </label>
             <select
               name="serviceMode"
               value={formData.serviceMode}
@@ -201,7 +315,9 @@ export default function AddServicePage() {
           </div>
 
           <div>
-            <label className="block mb-2 text-sm">Service Area</label>
+            <label className="block mb-2 text-sm">
+              Service Area
+            </label>
             <input
               required
               name="serviceArea"
@@ -213,7 +329,9 @@ export default function AddServicePage() {
           </div>
 
           <div>
-            <label className="block mb-2 text-sm">Technician Name</label>
+            <label className="block mb-2 text-sm">
+              Technician Name
+            </label>
             <input
               required
               name="technicianName"
@@ -237,11 +355,15 @@ export default function AddServicePage() {
           )}
 
           <button
-            disabled={loading}
+            disabled={loading || imageUploading}
             type="submit"
             className="w-full bg-lime-300 text-[#080D19] font-bold py-4 rounded-xl hover:bg-lime-200 transition disabled:opacity-50"
           >
-            {loading ? "Submitting..." : "Submit Service for Approval"}
+            {loading
+              ? "Submitting..."
+              : imageUploading
+                ? "Uploading Image..."
+                : "Submit Service for Approval"}
           </button>
         </form>
       </div>
