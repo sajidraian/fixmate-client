@@ -203,13 +203,12 @@ export default function ServiceDetailsPage() {
               </span>
             </div>
 
-            <Link
-              href={`/login?redirect=/services/${service._id}`}
-              className="mt-8 flex w-full items-center justify-center rounded-xl bg-[#B8F36B] px-6 py-4 font-bold text-[#080D19] transition hover:bg-white"
-            >
-              Book This Service →
-            </Link>
-
+          <Link
+  href={`/login?redirect=/services/${service._id}/book`}
+  className="mt-8 flex w-full items-center justify-center rounded-xl bg-[#B8F36B] px-6 py-4 font-bold text-[#080D19] transition hover:bg-white"
+>
+  Book This Service →
+</Link>
             <p className="mt-4 text-center text-xs leading-6 text-gray-500">
               Sign in to request this repair service.
             </p>
