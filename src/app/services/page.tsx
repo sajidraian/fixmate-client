@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Service {
   id: string;
@@ -26,7 +26,8 @@ const categories = [
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState(() => typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("category") || "All" : "All");
+  const [sort, setSort] = useState("newest");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -37,9 +38,12 @@ export default function ServicesPage() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/services`
-        );
+        const params = new URLSearchParams();
+        if (search.trim()) params.set("search", search.trim());
+        if (category !== "All") params.set("category", category);
+        if (sort !== "newest") params.set("sort", sort);
+        const query = params.toString();
+        const response = await fetch((process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000") + "/api/services" + (query ? "?" + query : ""));
 
         if (!response.ok) {
           throw new Error("Failed to fetch services");
@@ -69,21 +73,9 @@ export default function ServicesPage() {
     };
 
     fetchServices();
-  }, []);
+  }, [search, category, sort]);
 
-  // Search and category filtering
-  const filteredServices = useMemo(() => {
-    return services.filter((service) => {
-      const matchesSearch =
-        service.title.toLowerCase().includes(search.toLowerCase()) ||
-        service.description.toLowerCase().includes(search.toLowerCase());
-
-      const matchesCategory =
-        category === "All" || service.category === category;
-
-      return matchesSearch && matchesCategory;
-    });
-  }, [services, search, category]);
+  const filteredServices = services;
 
   return (
     <main className="min-h-screen bg-[#080D19] text-white">
@@ -166,9 +158,12 @@ export default function ServicesPage() {
 
           <div className="hidden h-8 w-px bg-white/10 md:block" />
 
-          <p className="px-3 py-2 text-xs text-gray-400">
-            {services.length} services available
-          </p>
+          <div className="flex items-center gap-3 px-3 py-2">
+            <p className="text-xs text-gray-400">{services.length} services found</p>
+            <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-lg border border-white/10 bg-[#080D19] px-3 py-2 text-xs text-white">
+              <option value="newest">Newest</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option>
+            </select>
+          </div>
         </div>
 
         {/* Category Filters */}
@@ -176,7 +171,7 @@ export default function ServicesPage() {
           {categories.map((item) => (
             <button
               key={item}
-              onClick={() => setCategory(item)}
+              onClick={() => { setCategory(item); const params = new URLSearchParams(window.location.search); if (item === "All") params.delete("category"); else params.set("category", item); const query = params.toString(); window.history.replaceState({}, "", window.location.pathname + (query ? "?" + query : "")); }}
               className={`rounded-full border px-5 py-2.5 text-sm font-medium transition ${
                 category === item
                   ? "border-[#B8F36B] bg-[#B8F36B] text-[#080D19]"
@@ -314,6 +309,8 @@ export default function ServicesPage() {
               onClick={() => {
                 setSearch("");
                 setCategory("All");
+                setSort("newest");
+                window.history.replaceState({}, "", window.location.pathname);
               }}
               className="mt-6 rounded-full bg-[#B8F36B] px-6 py-3 text-sm font-bold text-[#080D19] transition hover:bg-white"
             >
