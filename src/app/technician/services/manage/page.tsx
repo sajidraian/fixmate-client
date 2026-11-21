@@ -30,6 +30,7 @@ export default function ManageTechnicianServicesPage() {
   const [editingId, setEditingId] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -86,12 +87,18 @@ export default function ManageTechnicianServicesPage() {
   };
 
   const toggleAvailability = async (service: Service) => {
+    setTogglingId(service._id);
+    setError("");
+    setMessage("");
     try {
       await authenticatedFetch(`/api/services/${service._id}/availability`, { method: "PATCH", body: JSON.stringify({ isAvailable: !service.isAvailable }) });
       setServices(old => old.map(item => item._id === service._id ? { ...item, isAvailable: !service.isAvailable } : item));
       setMessage(service.isAvailable ? "Service hidden from public listings." : "Service is now visible in public listings.");
-      setError("");
-    } catch (e) { setError(e instanceof Error ? e.message : "Could not update availability."); }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not update availability.");
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const remove = async (id: string) => {
@@ -146,7 +153,7 @@ export default function ManageTechnicianServicesPage() {
                   <p className="mt-2 text-sm text-gray-400">{service.category} · ৳{service.basePrice}</p>
                   <div className="mt-4 flex gap-3">
                     <button onClick={() => edit(service)} className="flex-1 rounded-lg bg-lime-300 py-2 font-bold text-[#080D19]">Edit</button>
-                    <button onClick={() => toggleAvailability(service)} className="flex-1 rounded-lg border border-sky-400 py-2 text-sky-300">{service.isAvailable ? "Hide" : "Make Available"}</button>
+                    <button onClick={() => toggleAvailability(service)} disabled={togglingId === service._id} className="flex-1 rounded-lg border border-sky-400 py-2 text-sky-300 disabled:cursor-not-allowed disabled:opacity-50">{togglingId === service._id ? "Updating..." : service.isAvailable ? "Hide" : "Make Available"}</button>
                     <button onClick={() => remove(service._id)} className="flex-1 rounded-lg border border-red-400 py-2 text-red-300">Delete</button>
                   </div>
                 </div>
