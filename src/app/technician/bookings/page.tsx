@@ -27,6 +27,8 @@ export default function TechnicianBookingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const filteredBookings = statusFilter === "all" ? bookings : bookings.filter((booking) => booking.status === statusFilter);
   useEffect(() => {
     const loadBookings = async () => {
       try {
@@ -145,8 +147,15 @@ const handleStatusUpdate = async (
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {bookings.map((booking) => (
+          <>
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#111827] p-4">
+            <div><p className="font-semibold">Filter requests</p><p className="mt-1 text-sm text-gray-400">{filteredBookings.length} of {bookings.length} bookings</p></div>
+            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter bookings by status" className="rounded-xl border border-white/10 bg-[#080D19] px-4 py-3 text-white">
+              <option value="all">All statuses</option><option value="requested">Requested</option><option value="accepted">Accepted</option><option value="rejected">Rejected</option><option value="in-progress">In progress</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          {filteredBookings.length === 0 ? <div className="rounded-2xl border border-white/10 bg-[#111827] p-10 text-center text-gray-400">No bookings match this status.</div> : <div className="space-y-6">
+            {filteredBookings.map((booking) => (
               <article
                 key={booking._id}
                 className="rounded-2xl border border-white/10 bg-[#111827] p-6"
@@ -270,7 +279,8 @@ const handleStatusUpdate = async (
 </div>
               </article>
             ))}
-          </div>
+          </div>}
+          </>
         )}
       </div>
     </main>
