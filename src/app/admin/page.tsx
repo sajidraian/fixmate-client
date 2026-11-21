@@ -65,6 +65,26 @@ export default function AdminDashboard() {
     {error&&<p className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">{error}</p>}
     {notice&&<p className="mt-4 rounded-xl border border-[#B8F36B]/20 bg-[#B8F36B]/10 p-4 text-[#B8F36B]">{notice}</p>}
     <section className="mt-9 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{cards.map(([label,value,icon])=><article key={String(label)} className="rounded-2xl border border-white/10 bg-[#111B2D] p-6"><div className="flex items-center justify-between"><p className="text-sm text-gray-400">{label}</p><span className="text-2xl">{icon}</span></div><p className="mt-4 text-3xl font-black text-[#B8F36B]">{value}</p></article>)}</section>
+    <section className="mt-10 rounded-2xl border border-white/10 bg-[#111B2D] p-6">
+      <h2 className="text-xl font-bold">Platform Snapshot</h2>
+      <p className="mt-1 text-sm text-gray-400">Quick comparison of current platform activity.</p>
+      <div className="mt-6 space-y-4">
+        {[
+          ["Users", stats.totalUsers],
+          ["Technicians", stats.totalTechnicians],
+          ["Bookings", stats.totalBookings],
+          ["Paid transactions", stats.totalPayments],
+          ["Pending services", stats.pendingServices],
+        ].map(([label, value]) => {
+          const amount = Number(value);
+          const maximum = Math.max(stats.totalUsers, stats.totalTechnicians, stats.totalBookings, stats.totalPayments, stats.pendingServices, 1);
+          return <div key={String(label)}>
+            <div className="mb-2 flex justify-between text-sm"><span className="text-gray-300">{label}</span><span className="font-semibold text-[#B8F36B]">{amount}</span></div>
+            <div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#B8F36B]" style={{ width: `${Math.max(2, amount / maximum * 100)}%` }} /></div>
+          </div>;
+        })}
+      </div>
+    </section>
     <section className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{sections.map(section=><Link key={section.href} href={section.href} className="rounded-2xl border border-white/10 bg-[#111B2D] p-5 transition hover:-translate-y-1 hover:border-[#B8F36B]/50"><span className="text-2xl">{section.icon}</span><h2 className="mt-4 font-bold">{section.title} ↗</h2><p className="mt-2 text-sm leading-6 text-gray-400">{section.detail}</p></Link>)}</section>
     <section className="mt-12"><div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-bold">Pending Service Approvals</h2><p className="mt-1 text-sm text-gray-400">Review new technician listings before publishing.</p></div><Link href="/dashboard/admin/services" className="text-sm font-semibold text-[#B8F36B]">View all services →</Link></div>
       {!services.length?<div className="rounded-2xl border border-white/10 bg-[#111B2D] p-9 text-center text-gray-400">No pending services right now.</div>:<div className="grid gap-5 md:grid-cols-2">{services.map(service=><article key={service._id} className="overflow-hidden rounded-2xl border border-white/10 bg-[#111B2D] sm:flex"><img src={service.image} alt={service.title} className="h-48 w-full object-cover sm:h-auto sm:w-44"/><div className="flex-1 p-5"><p className="text-xs text-[#B8F36B]">{service.category} · {service.serviceArea}</p><h3 className="mt-2 text-lg font-bold">{service.title}</h3><p className="mt-1 text-sm text-gray-400">{service.technicianName} · ৳{service.basePrice}</p><p className="mt-3 line-clamp-2 text-sm text-gray-400">{service.description}</p><div className="mt-4 flex gap-2"><button onClick={()=>moderate(service._id,"approved")} className="rounded-lg bg-[#B8F36B] px-4 py-2 text-sm font-bold text-[#080D19]">Approve</button><button onClick={()=>moderate(service._id,"rejected")} className="rounded-lg border border-red-400/60 px-4 py-2 text-sm text-red-300">Reject</button></div></div></article>)}</div>}
