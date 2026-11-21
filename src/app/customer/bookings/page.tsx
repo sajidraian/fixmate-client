@@ -35,12 +35,15 @@ export default function CustomerBookingsPage() {
   const [paymentMessage, setPaymentMessage] = useState("");
   const [reviewDrafts, setReviewDrafts] = useState<Record<string, { rating: number; comment: string }>>({});
   const [reviewingId, setReviewingId] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchBookings = async (): Promise<Booking[]> => {
     try {
-      const result = await authenticatedFetch("/api/bookings/my");
+      const result = await authenticatedFetch("/api/bookings/my?page=" + page + "&limit=10");
       const items: Booking[] = result.data || [];
       setBookings(items);
+      setTotalPages(Math.max(1, Number(result.pagination?.totalPages) || 1));
       return items;
     } catch (err) {
       setError(
@@ -112,6 +115,8 @@ useEffect(() => {
     if (pollTimer) clearTimeout(pollTimer);
   };
 }, []);
+
+  useEffect(() => { void fetchBookings(); }, [page]);
 
   const handleCancel = async (bookingId: string) => {
     const confirmed = await confirm({ title: "Cancel booking?", message: "Are you sure you want to cancel this booking? This action cannot be undone.", confirmLabel: "Cancel booking", danger: true });
@@ -404,6 +409,7 @@ useEffect(() => {
             ))}
           </div>
         )}
+        {!loading && totalPages > 1 && <div className="mt-8 flex items-center justify-center gap-4"><button onClick={()=>setPage(value=>Math.max(1,value-1))} disabled={page===1} className="rounded-xl border border-white/15 px-4 py-2 disabled:opacity-40">Previous</button><span className="text-sm text-gray-400">Page {page} of {totalPages}</span><button onClick={()=>setPage(value=>Math.min(totalPages,value+1))} disabled={page===totalPages} className="rounded-xl border border-white/15 px-4 py-2 disabled:opacity-40">Next</button></div>}
       </div>
     </main>
   );
