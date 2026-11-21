@@ -319,26 +319,6 @@ export default function ServicesPage() {
           </div>
         )}
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10 px-6 py-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
-          <Link href="/" className="text-xl font-black">
-            fixmate<span className="text-[#B8F36B]">.</span>
-          </Link>
-
-          <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} FixMate. Making repairs easier.
-          </p>
-
-          <Link
-            href="/"
-            className="text-sm text-gray-400 transition hover:text-[#B8F36B]"
-          >
-            Back to Home ↑
-          </Link>
-        </div>
-      </footer>
     </main>
   );
 }
