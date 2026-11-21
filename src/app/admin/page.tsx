@@ -1,220 +1,73 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authenticatedFetch } from "@/lib/api";
 
-interface Service {
-  _id: string;
-  title: string;
-  category: string;
-  description: string;
-  image: string;
-  basePrice: number;
-  technicianName: string;
-  technicianEmail: string;
-  serviceArea: string;
-  approvalStatus: string;
-}
+type Stats = { totalUsers:number; totalTechnicians:number; pendingServices:number; totalBookings:number; totalPayments:number; totalRevenue:number };
+type Service = { _id:string; title:string; category:string; description:string; image:string; basePrice:number; technicianName:string; technicianEmail:string; serviceArea:string };
+
+const sections = [
+  { href:"/dashboard/admin/users", title:"Manage Users", detail:"View accounts and update platform roles", icon:"👥" },
+  { href:"/dashboard/admin/services", title:"Service Moderation", detail:"Review pending, approved and rejected listings", icon:"🛠️" },
+  { href:"/dashboard/admin/bookings", title:"All Bookings", detail:"Monitor every repair request and status", icon:"📋" },
+  { href:"/dashboard/admin/transactions", title:"Transactions", detail:"Review Stripe payments and revenue", icon:"💳" },
+];
 
 export default function AdminDashboard() {
-  const router = useRouter();
+  const [stats,setStats]=useState<Stats>({totalUsers:0,totalTechnicians:0,pendingServices:0,totalBookings:0,totalPayments:0,totalRevenue:0});
+  const [services,setServices]=useState<Service[]>([]);
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState("");
+  const [notice,setNotice]=useState("");
 
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const loadDashboard = async () => {
+  useEffect(()=>{
+    (async()=>{
       try {
-        const userResult = await authenticatedFetch("/api/users/me");
+        const [statsResult,pendingResult]=await Promise.all([
+          authenticatedFetch("/api/admin/stats"),
+          authenticatedFetch("/api/services/admin/pending"),
+        ]);
+        setStats(statsResult.data);
+        setServices(pendingResult.data||[]);
+      } catch(e) {
+        setError(e instanceof Error?e.message:"Failed to load admin dashboard.");
+      } finally { setLoading(false); }
+    })();
+  },[]);
 
-        if (userResult.data.role !== "admin") {
-          router.replace("/");
-          return;
-        }
-
-        const result = await authenticatedFetch(
-          "/api/services/admin/pending"
-        );
-
-        setServices(result.data);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load dashboard."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDashboard();
-  }, [router]);
-
-  const handleApproval = async (
-    serviceId: string,
-    approvalStatus: "approved" | "rejected"
-  ) => {
+  const moderate=async(id:string,approvalStatus:"approved"|"rejected")=>{
+    const service=services.find(item=>item._id===id);
+    if(!service || !window.confirm(`${approvalStatus==="approved"?"Approve":"Reject"} ${service.title}?`)) return;
     try {
-      await authenticatedFetch(
-        `/api/services/${serviceId}/approval`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ approvalStatus }),
-        }
-      );
-
-      setServices((previous) =>
-        previous.filter((service) => service._id !== serviceId)
-      );
-    } catch (err) {
-      alert(
-        err instanceof Error ? err.message : "Something went wrong."
-      );
-    }
+      await authenticatedFetch(`/api/services/${id}/approval`,{method:"PATCH",body:JSON.stringify({approvalStatus})});
+      setServices(items=>items.filter(item=>item._id!==id));
+      setStats(previous=>({...previous,pendingServices:Math.max(0,previous.pendingServices-1)}));
+      setNotice(`Service ${approvalStatus} successfully.`);
+    } catch(e) { setError(e instanceof Error?e.message:"Could not update service."); }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#080D19] flex items-center justify-center text-lime-300">
-        Loading Admin Dashboard...
-      </div>
-    );
-  }
+  if(loading) return <main className="flex min-h-[60vh] items-center justify-center bg-[#080D19] text-[#B8F36B]">Loading Admin Dashboard…</main>;
 
-  return (
-    <main className="min-h-screen bg-[#080D19] text-white px-5 py-10">
-      <div className="max-w-7xl mx-auto">
-        <Link href="/" className="text-lime-300 font-bold text-2xl">
-          fixmate.
-        </Link>
+  const cards=[
+    ["Total Users",stats.totalUsers,"👥"],
+    ["Technicians",stats.totalTechnicians,"🧰"],
+    ["Pending Services",stats.pendingServices,"⏳"],
+    ["Total Bookings",stats.totalBookings,"📋"],
+    ["Paid Transactions",stats.totalPayments,"💳"],
+    ["Total Revenue",`$${Number(stats.totalRevenue||0).toFixed(2)}`,"$"],
+  ];
 
-        <section className="mt-12">
-          <p className="text-lime-300 uppercase tracking-widest text-sm">
-            Administration
-          </p>
-
-          <h1 className="text-4xl md:text-5xl font-bold mt-3">
-            Admin Dashboard
-          </h1>
-
-          <p className="text-gray-400 mt-3">
-            Review and manage technician service submissions.
-          </p>
-        </section>
-
-        <section className="mt-10 grid md:grid-cols-3 gap-5">
-          <div className="bg-[#111B2D] border border-gray-800 rounded-2xl p-6">
-            <p className="text-gray-400">Pending Services</p>
-            <h2 className="text-4xl font-bold text-lime-300 mt-3">
-              {services.length}
-            </h2>
-          </div>
-        </section>
-
-        <section className="mt-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Pending Approvals</h2>
-            <span className="text-sm text-gray-400">
-              {services.length} submissions
-            </span>
-          </div>
-
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl p-4 mb-6">
-              {error}
-            </div>
-          )}
-
-          {!error && services.length === 0 && (
-            <div className="bg-[#111B2D] border border-gray-800 rounded-2xl p-10 text-center">
-              <p className="text-gray-300 text-lg">
-                No pending services right now.
-              </p>
-              <p className="text-gray-500 mt-2">
-                New technician submissions will appear here.
-              </p>
-            </div>
-          )}
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {services.map((service) => (
-              <div
-                key={service._id}
-                className="bg-[#111B2D] border border-gray-800 rounded-2xl overflow-hidden"
-              >
-                <img
-                  src={service.image}
-                  alt={service.title}
-                  className="w-full h-52 object-cover"
-                />
-
-                <div className="p-6">
-                  <div className="flex justify-between items-center gap-3">
-                    <span className="text-lime-300 text-sm">
-                      {service.category}
-                    </span>
-
-                    <span className="text-xs bg-yellow-400/10 text-yellow-300 px-3 py-1 rounded-full">
-                      Pending
-                    </span>
-                  </div>
-
-                  <h3 className="text-2xl font-bold mt-3">
-                    {service.title}
-                  </h3>
-
-                  <p className="text-gray-400 mt-3 text-sm leading-6">
-                    {service.description}
-                  </p>
-
-                  <div className="border-t border-gray-800 mt-5 pt-5 space-y-2 text-sm">
-                    <p>
-                      <span className="text-gray-500">Technician:</span>{" "}
-                      {service.technicianName}
-                    </p>
-
-                    <p>
-                      <span className="text-gray-500">Email:</span>{" "}
-                      {service.technicianEmail}
-                    </p>
-
-                    <p>
-                      <span className="text-gray-500">Area:</span>{" "}
-                      {service.serviceArea}
-                    </p>
-
-                    <p className="text-lime-300 font-bold text-lg">
-                      ৳{service.basePrice}
-                    </p>
-                  </div>
-
-                  <div className="flex gap-3 mt-6">
-                    <button
-                      onClick={() =>
-                        handleApproval(service._id, "approved")
-                      }
-                      className="flex-1 bg-lime-300 text-[#080D19] font-bold py-3 rounded-xl hover:bg-lime-200 transition"
-                    >
-                      Approve
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        handleApproval(service._id, "rejected")
-                      }
-                      className="flex-1 border border-red-400 text-red-400 font-bold py-3 rounded-xl hover:bg-red-400/10 transition"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-    </main>
-  );
+  return <main className="min-h-screen bg-[#080D19] px-5 py-10 text-white"><div className="mx-auto max-w-7xl">
+    <p className="text-sm uppercase tracking-[.25em] text-[#B8F36B]">Administration</p>
+    <h1 className="mt-3 text-4xl font-black md:text-5xl">Admin Dashboard</h1>
+    <p className="mt-3 text-gray-400">Platform overview, user management and service approvals.</p>
+    {error&&<p className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">{error}</p>}
+    {notice&&<p className="mt-4 rounded-xl border border-[#B8F36B]/20 bg-[#B8F36B]/10 p-4 text-[#B8F36B]">{notice}</p>}
+    <section className="mt-9 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{cards.map(([label,value,icon])=><article key={String(label)} className="rounded-2xl border border-white/10 bg-[#111B2D] p-6"><div className="flex items-center justify-between"><p className="text-sm text-gray-400">{label}</p><span className="text-2xl">{icon}</span></div><p className="mt-4 text-3xl font-black text-[#B8F36B]">{value}</p></article>)}</section>
+    <section className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{sections.map(section=><Link key={section.href} href={section.href} className="rounded-2xl border border-white/10 bg-[#111B2D] p-5 transition hover:-translate-y-1 hover:border-[#B8F36B]/50"><span className="text-2xl">{section.icon}</span><h2 className="mt-4 font-bold">{section.title} ↗</h2><p className="mt-2 text-sm leading-6 text-gray-400">{section.detail}</p></Link>)}</section>
+    <section className="mt-12"><div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-bold">Pending Service Approvals</h2><p className="mt-1 text-sm text-gray-400">Review new technician listings before publishing.</p></div><Link href="/dashboard/admin/services" className="text-sm font-semibold text-[#B8F36B]">View all services →</Link></div>
+      {!services.length?<div className="rounded-2xl border border-white/10 bg-[#111B2D] p-9 text-center text-gray-400">No pending services right now.</div>:<div className="grid gap-5 md:grid-cols-2">{services.map(service=><article key={service._id} className="overflow-hidden rounded-2xl border border-white/10 bg-[#111B2D] sm:flex"><img src={service.image} alt={service.title} className="h-48 w-full object-cover sm:h-auto sm:w-44"/><div className="flex-1 p-5"><p className="text-xs text-[#B8F36B]">{service.category} · {service.serviceArea}</p><h3 className="mt-2 text-lg font-bold">{service.title}</h3><p className="mt-1 text-sm text-gray-400">{service.technicianName} · ৳{service.basePrice}</p><p className="mt-3 line-clamp-2 text-sm text-gray-400">{service.description}</p><div className="mt-4 flex gap-2"><button onClick={()=>moderate(service._id,"approved")} className="rounded-lg bg-[#B8F36B] px-4 py-2 text-sm font-bold text-[#080D19]">Approve</button><button onClick={()=>moderate(service._id,"rejected")} className="rounded-lg border border-red-400/60 px-4 py-2 text-sm text-red-300">Reject</button></div></div></article>)}</div>}
+    </section>
+  </div></main>;
 }
