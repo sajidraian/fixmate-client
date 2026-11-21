@@ -96,22 +96,6 @@ export default function ServiceDetailsPage() {
 
   return (
     <main className="min-h-screen bg-[#080D19] text-white">
-      {/* Navbar */}
-      <nav className="border-b border-white/10">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/" className="text-2xl font-black">
-            fixmate<span className="text-[#B8F36B]">.</span>
-          </Link>
-
-          <Link
-            href="/services"
-            className="text-sm text-gray-300 transition hover:text-[#B8F36B]"
-          >
-            ← All Services
-          </Link>
-        </div>
-      </nav>
-
       {/* Service Details */}
       <section className="mx-auto max-w-7xl px-6 py-14 md:py-20">
         <div className="grid gap-12 lg:grid-cols-2">
@@ -204,7 +188,7 @@ export default function ServiceDetailsPage() {
             </div>
 
           <Link
-  href={`/login?redirect=/services/${service._id}/book`}
+  href={`/sign-in?redirect=/services/${service._id}/book`}
   className="mt-8 flex w-full items-center justify-center rounded-xl bg-[#B8F36B] px-6 py-4 font-bold text-[#080D19] transition hover:bg-white"
 >
   Book This Service →
