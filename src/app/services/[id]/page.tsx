@@ -215,11 +215,6 @@ export default function ServiceDetailsPage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10 px-6 py-8 text-center text-xs text-gray-500">
-        © {new Date().getFullYear()} FixMate. Making repairs easier.
-      </footer>
     </main>
   );
 }
