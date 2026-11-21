@@ -18,6 +18,15 @@ export default function ToastProvider({ children }: { children: React.ReactNode 
   }, []);
 
   useEffect(() => {
+    const handleToast = (event: Event) => {
+      const detail = (event as CustomEvent<{ message?: string; kind?: ToastKind }>).detail;
+      if (detail?.message) notify(detail.message, detail.kind || "success");
+    };
+    window.addEventListener("fixmate:toast", handleToast);
+    return () => window.removeEventListener("fixmate:toast", handleToast);
+  }, [notify]);
+
+  useEffect(() => {
     if (!items.length) return;
     const timers = items.map((item) =>
       window.setTimeout(() => setItems((current) => current.filter((toast) => toast.id !== item.id)), 3800)
