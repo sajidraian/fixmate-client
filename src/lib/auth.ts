@@ -1,34 +1,54 @@
-
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { jwt } from "better-auth/plugins";
 import { MongoClient } from "mongodb";
 
-const client = new MongoClient(process.env.MONGODB_URI!);
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+  throw new Error(
+    "FixMate auth configuration error: MONGODB_URI is missing from fixmate-client/.env.local"
+  );
+}
+
+const authSecret =
+  process.env.BETTER_AUTH_SECRET ||
+  (process.env.NODE_ENV !== "production"
+    ? "fixmate-local-development-secret-change-before-deploy-2026"
+    : undefined);
+
+if (!authSecret) {
+  throw new Error(
+    "FixMate auth configuration error: BETTER_AUTH_SECRET is required in production"
+  );
+}
+
+const client = new MongoClient(mongoUri);
 const db = client.db(process.env.DB_NAME || "fixmate");
 
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
 export const auth = betterAuth({
-  database: mongodbAdapter(db, {
-    client,
-  }),
+  database: mongodbAdapter(db, { client }),
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  secret: authSecret,
 
-  baseURL: process.env.BETTER_AUTH_URL,
-  secret: process.env.BETTER_AUTH_SECRET,
-
-  // Email and Password Login
   emailAndPassword: {
     enabled: true,
   },
 
-  // Google Login
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    },
-  },
+  // Google sign-in is enabled only when both OAuth values are configured.
+  ...(googleClientId && googleClientSecret
+    ? {
+        socialProviders: {
+          google: {
+            clientId: googleClientId,
+            clientSecret: googleClientSecret,
+          },
+        },
+      }
+    : {}),
 
-  // Additional User Fields
   user: {
     additionalFields: {
       role: {
@@ -55,13 +75,11 @@ export const auth = betterAuth({
     },
   },
 
-  // Role Security
   databaseHooks: {
     user: {
       create: {
         before: async (user) => {
           const roleValue = (user as { role?: unknown }).role;
-
           const role =
             typeof roleValue === "string" ? roleValue : "customer";
 
@@ -80,16 +98,15 @@ export const auth = betterAuth({
     },
   },
 
-  // JWT Plugin
- plugins: [
-  jwt({
-    jwt: {
-      definePayload: ({ user }) => ({
-        id: user.id,
-        email: user.email,
-        role: (user as typeof user & { role?: string }).role ?? "customer",
-      }),
-    },
-  }),
-],
+  plugins: [
+    jwt({
+      jwt: {
+        definePayload: ({ user }) => ({
+          id: user.id,
+          email: user.email,
+          role: (user as typeof user & { role?: string }).role ?? "customer",
+        }),
+      },
+    }),
+  ],
 });
