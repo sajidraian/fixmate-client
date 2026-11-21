@@ -49,11 +49,12 @@ useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   const paymentStatus = params.get("payment");
   const bookingId = params.get("bookingId");
+  const sessionId = params.get("session_id");
   let cancelled = false;
   let pollTimer: ReturnType<typeof setTimeout> | undefined;
 
   if (paymentStatus === "success") {
-    setPaymentMessage("Payment received. Waiting for Stripe to confirm it...");
+    setPaymentMessage("Payment received. Verifying directly with Stripe...");
   } else if (paymentStatus === "cancelled") {
     setPaymentMessage("Payment was cancelled. You can try again anytime.");
   }
@@ -63,6 +64,19 @@ useEffect(() => {
   }
 
   const refreshAndVerify = async (attempt = 0) => {
+    if (cancelled) return;
+
+    if (paymentStatus === "success" && sessionId && attempt === 0) {
+      try {
+        await authenticatedFetch("/api/payments/verify-checkout-session", {
+          method: "POST",
+          body: JSON.stringify({ sessionId }),
+        });
+      } catch {
+        // The Stripe webhook may still confirm the payment; keep polling below.
+      }
+    }
+
     const latestBookings = await fetchBookings();
     if (cancelled || paymentStatus !== "success" || !bookingId) return;
 
@@ -80,9 +94,7 @@ useEffect(() => {
         void refreshAndVerify(attempt + 1);
       }, 2000);
     } else {
-      setPaymentMessage(
-        "Stripe checkout returned successfully, but confirmation is still pending. Keep the Stripe webhook listener running and refresh this page shortly."
-      );
+      setPaymentMessage("Payment confirmation is still pending. Refresh this page shortly; your payment will not be charged again by refreshing.");
     }
   };
 
