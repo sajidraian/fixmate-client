@@ -162,6 +162,9 @@ export default function AddServicePage() {
         >
           ← Back to Dashboard
         </Link>
+        <Link href="/technician/services/manage" className="ml-5 text-lime-300 hover:text-white">
+          Manage Existing Services →
+        </Link>
 
         <div className="mt-10 mb-8">
           <p className="text-lime-300 uppercase tracking-widest text-sm">
