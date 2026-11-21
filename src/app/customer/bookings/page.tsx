@@ -29,14 +29,17 @@ export default function CustomerBookingsPage() {
   const [payingId, setPayingId] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
 
-  const fetchBookings = async () => {
+  const fetchBookings = async (): Promise<Booking[]> => {
     try {
       const result = await authenticatedFetch("/api/bookings/my");
-      setBookings(result.data || []);
+      const items: Booking[] = result.data || [];
+      setBookings(items);
+      return items;
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load bookings."
       );
+      return [];
     } finally {
       setLoading(false);
     }
@@ -45,26 +48,50 @@ export default function CustomerBookingsPage() {
 useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   const paymentStatus = params.get("payment");
+  const bookingId = params.get("bookingId");
+  let cancelled = false;
+  let pollTimer: ReturnType<typeof setTimeout> | undefined;
 
   if (paymentStatus === "success") {
-    setPaymentMessage(
-      "Payment submitted successfully! Your payment status will update after Stripe verification."
-    );
+    setPaymentMessage("Payment received. Waiting for Stripe to confirm it...");
   } else if (paymentStatus === "cancelled") {
-    setPaymentMessage(
-      "Payment was cancelled. You can try again anytime."
-    );
+    setPaymentMessage("Payment was cancelled. You can try again anytime.");
   }
 
   if (paymentStatus) {
-    window.history.replaceState(
-      {},
-      "",
-      window.location.pathname
-    );
+    window.history.replaceState({}, "", window.location.pathname);
   }
 
-  fetchBookings();
+  const refreshAndVerify = async (attempt = 0) => {
+    const latestBookings = await fetchBookings();
+    if (cancelled || paymentStatus !== "success" || !bookingId) return;
+
+    const paidBooking = latestBookings.find(
+      (booking) => booking._id === bookingId && booking.paymentStatus === "paid"
+    );
+
+    if (paidBooking) {
+      setPaymentMessage("Payment verified successfully. Your booking is now marked as paid.");
+      return;
+    }
+
+    if (attempt < 14) {
+      pollTimer = setTimeout(() => {
+        void refreshAndVerify(attempt + 1);
+      }, 2000);
+    } else {
+      setPaymentMessage(
+        "Stripe checkout returned successfully, but confirmation is still pending. Keep the Stripe webhook listener running and refresh this page shortly."
+      );
+    }
+  };
+
+  void refreshAndVerify();
+
+  return () => {
+    cancelled = true;
+    if (pollTimer) clearTimeout(pollTimer);
+  };
 }, []);
 
   const handleCancel = async (bookingId: string) => {
