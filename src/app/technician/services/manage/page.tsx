@@ -16,6 +16,7 @@ interface Service {
   serviceArea: string;
   technicianName: string;
   approvalStatus: string;
+  isAvailable: boolean;
 }
 
 const emptyForm = {
@@ -84,6 +85,15 @@ export default function ManageTechnicianServicesPage() {
     }
   };
 
+  const toggleAvailability = async (service: Service) => {
+    try {
+      await authenticatedFetch(`/api/services/${service._id}/availability`, { method: "PATCH", body: JSON.stringify({ isAvailable: !service.isAvailable }) });
+      setServices(old => old.map(item => item._id === service._id ? { ...item, isAvailable: !service.isAvailable } : item));
+      setMessage(service.isAvailable ? "Service hidden from public listings." : "Service is now visible in public listings.");
+      setError("");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not update availability."); }
+  };
+
   const remove = async (id: string) => {
     if (!window.confirm("Delete this service?")) return;
     setError("");
@@ -132,10 +142,11 @@ export default function ManageTechnicianServicesPage() {
               <article key={service._id} className="overflow-hidden rounded-2xl border border-gray-800 bg-[#111B2D]">
                 <img src={service.image} alt={service.title} className="h-44 w-full object-cover" />
                 <div className="p-5">
-                  <div className="flex justify-between gap-3"><h2 className="font-bold">{service.title}</h2><span className="text-xs capitalize text-yellow-300">{service.approvalStatus}</span></div>
+                  <div className="flex justify-between gap-3"><h2 className="font-bold">{service.title}</h2><span className="text-xs capitalize text-yellow-300">{service.approvalStatus} · {service.isAvailable ? "Available" : "Hidden"}</span></div>
                   <p className="mt-2 text-sm text-gray-400">{service.category} · ৳{service.basePrice}</p>
                   <div className="mt-4 flex gap-3">
                     <button onClick={() => edit(service)} className="flex-1 rounded-lg bg-lime-300 py-2 font-bold text-[#080D19]">Edit</button>
+                    <button onClick={() => toggleAvailability(service)} className="flex-1 rounded-lg border border-sky-400 py-2 text-sky-300">{service.isAvailable ? "Hide" : "Make Available"}</button>
                     <button onClick={() => remove(service._id)} className="flex-1 rounded-lg border border-red-400 py-2 text-red-300">Delete</button>
                   </div>
                 </div>
