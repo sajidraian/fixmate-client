@@ -5,90 +5,96 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authenticatedFetch } from "@/lib/api";
 
+interface Booking {
+  _id: string;
+  status: string;
+  paymentStatus: string;
+  finalAmount: number;
+}
+interface Service {
+  _id: string;
+  approvalStatus: string;
+}
+
 export default function TechnicianDashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<{
-    id: string;
-    name?: string;
-    email: string;
-    role: string;
-  } | null>(null);
-
+  const [user, setUser] = useState<{ name?: string; email: string; role: string } | null>(null);
+  const [stats, setStats] = useState({ services: 0, pending: 0, active: 0, completed: 0, paidEarnings: 0 });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const checkUser = async () => {
+    let active = true;
+    const loadDashboard = async () => {
       try {
-        const result = await authenticatedFetch("/api/users/me");
-
-        if (result.data.role !== "technician") {
+        const profile = await authenticatedFetch("/api/users/me");
+        if (profile.data.role !== "technician") {
           router.replace("/");
           return;
         }
+        if (!active) return;
+        setUser(profile.data);
 
-        setUser(result.data);
-      } catch (error) {
-        console.error("Dashboard authentication error:", error);
-        router.replace("/login?redirect=/technician");
+        const [bookingResult, serviceResult] = await Promise.all([
+          authenticatedFetch("/api/bookings/technician"),
+          authenticatedFetch("/api/services/technician/mine"),
+        ]);
+        if (!active) return;
+        const bookings: Booking[] = bookingResult.data || [];
+        const services: Service[] = serviceResult.data || [];
+        setStats({
+          services: services.length,
+          pending: bookings.filter((booking) => booking.status === "requested").length,
+          active: bookings.filter((booking) => ["accepted", "in-progress"].includes(booking.status)).length,
+          completed: bookings.filter((booking) => booking.status === "completed").length,
+          paidEarnings: bookings.filter((booking) => booking.status === "completed" && booking.paymentStatus === "paid").reduce((sum, booking) => sum + Number(booking.finalAmount || 0), 0),
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unable to load dashboard data.");
+        if (!user) router.replace("/login?redirect=/technician");
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
-
-    checkUser();
+    loadDashboard();
+    return () => { active = false; };
   }, [router]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#080D19] flex items-center justify-center text-lime-300">
-        Loading Dashboard...
-      </div>
-    );
-  }
-
+  if (loading) return <div className="min-h-screen bg-[#080D19] flex items-center justify-center text-lime-300">Loading Dashboard...</div>;
   if (!user) return null;
+
+  const cards = [
+    { label: "My Services", value: stats.services, href: "/technician/services", detail: "Manage your listings" },
+    { label: "New Requests", value: stats.pending, href: "/technician/bookings", detail: "Requests awaiting response" },
+    { label: "Active Repairs", value: stats.active, href: "/technician/bookings", detail: "Accepted or in progress" },
+    { label: "Completed Jobs", value: stats.completed, href: "/technician/bookings", detail: "Finished repair jobs" },
+    { label: "Paid Earnings", value: `৳${stats.paidEarnings.toLocaleString()}`, href: "/technician/bookings", detail: "From paid completed bookings" },
+  ];
 
   return (
     <main className="min-h-screen bg-[#080D19] text-white p-6 md:p-10">
       <div className="max-w-6xl mx-auto">
-        <Link href="/" className="text-lime-300 font-bold text-xl">
-          fixmate.
-        </Link>
-
+        <Link href="/" className="text-lime-300 font-bold text-xl">fixmate.</Link>
         <div className="mt-12">
-          <p className="text-lime-300 text-sm uppercase tracking-widest">
-            Technician Dashboard
-          </p>
-
-          <h1 className="text-3xl md:text-5xl font-bold mt-3">
-            Welcome, {user.name || "Technician"}!
-          </h1>
-
+          <p className="text-lime-300 text-sm uppercase tracking-widest">Technician Dashboard</p>
+          <h1 className="text-3xl md:text-5xl font-bold mt-3">Welcome, {user.name || "Technician"}!</h1>
           <p className="text-gray-400 mt-3">{user.email}</p>
+          <p className="text-gray-500 mt-2">Here is a live overview of your repair work.</p>
         </div>
-
-<div className="grid md:grid-cols-3 gap-5 mt-12">
-  <Link
-    href="/technician/services"
-    className="bg-[#111B2D] border border-gray-800 rounded-2xl p-7 hover:border-lime-300 transition"
-  >
-    <h2 className="text-gray-400 text-sm">My Services</h2>
-    <p className="text-xl font-bold mt-4">Manage Services →</p>
-  </Link>
-
-  <Link
-    href="/technician/bookings"
-    className="bg-[#111B2D] border border-gray-800 rounded-2xl p-7 hover:border-lime-300 transition"
-  >
-    <h2 className="text-gray-400 text-sm">Booking Requests</h2>
-    <p className="text-xl font-bold mt-4">View Requests →</p>
-  </Link>
-
-  <div className="bg-[#111B2D] border border-gray-800 rounded-2xl p-7">
-    <h2 className="text-gray-400 text-sm">My Earnings</h2>
-    <p className="text-xl font-bold mt-4">Track Earnings</p>
-  </div>
-</div>
+        {error && <p role="alert" className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">{error}</p>}
+        <section className="grid gap-5 mt-10 sm:grid-cols-2 lg:grid-cols-3">
+          {cards.map((card) => (
+            <Link key={card.label} href={card.href} className="rounded-2xl border border-gray-800 bg-[#111B2D] p-7 transition hover:border-lime-300">
+              <p className="text-sm text-gray-400">{card.label}</p>
+              <p className="mt-3 text-3xl font-bold text-lime-300">{card.value}</p>
+              <p className="mt-2 text-sm text-gray-500">{card.detail}</p>
+            </Link>
+          ))}
+        </section>
+        <section className="mt-8 grid gap-4 sm:grid-cols-2">
+          <Link href="/technician/services" className="rounded-2xl bg-lime-300 p-6 font-bold text-[#080D19] hover:bg-white">＋ Add or manage a service</Link>
+          <Link href="/technician/bookings" className="rounded-2xl border border-white/15 p-6 font-bold hover:border-lime-300">View booking requests →</Link>
+        </section>
       </div>
     </main>
   );
