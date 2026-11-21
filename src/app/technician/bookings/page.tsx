@@ -29,6 +29,8 @@ export default function TechnicianBookingsPage() {
   const [error, setError] = useState("");
 const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [completionBooking, setCompletionBooking] = useState<Booking | null>(null);
   const [finalAmountInput, setFinalAmountInput] = useState("");
   const notify = useToast();
@@ -36,8 +38,9 @@ const [updatingId, setUpdatingId] = useState<string | null>(null);
   useEffect(() => {
     const loadBookings = async () => {
       try {
-        const result = await authenticatedFetch("/api/bookings/technician");
+        const result = await authenticatedFetch("/api/bookings/technician?page=" + page + "&limit=10");
         setBookings(result.data || []);
+        setTotalPages(Math.max(1, Number(result.pagination?.totalPages) || 1));
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load bookings."
@@ -48,7 +51,7 @@ const [updatingId, setUpdatingId] = useState<string | null>(null);
     };
 
     loadBookings();
-  }, []);
+  }, [page]);
 const handleStatusUpdate = async (
   bookingId: string,
   status: string,
@@ -273,6 +276,7 @@ const submitCompletion = () => {
           </div>}
           </>
         )}
+        {!loading && totalPages > 1 && <div className="mt-8 flex items-center justify-center gap-4"><button onClick={()=>setPage(value=>Math.max(1,value-1))} disabled={page===1} className="rounded-xl border border-white/15 px-4 py-2 disabled:opacity-40">Previous</button><span className="text-sm text-gray-400">Page {page} of {totalPages}</span><button onClick={()=>setPage(value=>Math.min(totalPages,value+1))} disabled={page===totalPages} className="rounded-xl border border-white/15 px-4 py-2 disabled:opacity-40">Next</button></div>}
       {completionBooking && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm" onClick={(event) => { if (event.target === event.currentTarget) setCompletionBooking(null); }}>
           <div role="dialog" aria-modal="true" aria-labelledby="complete-repair-title" className="w-full max-w-md rounded-3xl border border-white/10 bg-[#111B2D] p-6 shadow-2xl">
