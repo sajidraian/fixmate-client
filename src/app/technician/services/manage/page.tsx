@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { authenticatedFetch } from "@/lib/api";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 interface Service {
   _id: string;
@@ -25,6 +26,7 @@ const emptyForm = {
 };
 
 export default function ManageTechnicianServicesPage() {
+  const confirm = useConfirm();
   const [services, setServices] = useState<Service[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState("");
@@ -102,7 +104,8 @@ export default function ManageTechnicianServicesPage() {
   };
 
   const remove = async (id: string) => {
-    if (!window.confirm("Delete this service?")) return;
+    const accepted = await confirm({ title: "Delete service?", message: "This service listing will be permanently deleted. Continue?", confirmLabel: "Delete service", danger: true });
+    if (!accepted) return;
     setError("");
     setMessage("");
     try {
