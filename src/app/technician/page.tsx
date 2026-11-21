@@ -93,6 +93,24 @@ export default function TechnicianDashboard() {
             </Link>
           ))}
         </section>
+        <section className="mt-8 rounded-2xl border border-gray-800 bg-[#111B2D] p-6">
+          <h2 className="text-xl font-bold">Work Overview</h2>
+          <p className="mt-1 text-sm text-gray-400">Your services and job progress.</p>
+          <div className="mt-5 space-y-4">
+            {[
+              ["Services", stats.services],
+              ["New requests", stats.pending],
+              ["Active repairs", stats.active],
+              ["Completed jobs", stats.completed],
+            ].map(([label, value]) => {
+              const maximum = Math.max(stats.services, stats.pending, stats.active, stats.completed, 1);
+              return <div key={String(label)}>
+                <div className="mb-2 flex justify-between text-sm"><span className="text-gray-300">{label}</span><span className="text-lime-300">{value}</span></div>
+                <div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-lime-300" style={{ width: `${Math.max(2, Number(value) / maximum * 100)}%` }} /></div>
+              </div>;
+            })}
+          </div>
+        </section>
         <section className="mt-8 grid gap-4 sm:grid-cols-2">
           <Link href="/technician/services" className="rounded-2xl bg-lime-300 p-6 font-bold text-[#080D19] hover:bg-white">＋ Add or manage a service</Link>
           <Link href="/technician/bookings" className="rounded-2xl border border-white/15 p-6 font-bold hover:border-lime-300">View booking requests →</Link>
