@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { authenticatedFetch } from "@/lib/api";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 type Service = {
   _id: string;
@@ -16,6 +17,7 @@ type Service = {
 };
 
 export default function AdminServicesPage() {
+  const confirm = useConfirm();
   const [items, setItems] = useState<Service[]>([]);
   const [status, setStatus] = useState("pending");
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,8 @@ export default function AdminServicesPage() {
 
   const moderate = async (service: Service, approvalStatus: "approved" | "rejected") => {
     const action = approvalStatus === "approved" ? "approve" : "reject";
-    if (!window.confirm(`Are you sure you want to ${action} "${service.title}"?`)) return;
+    const accepted = await confirm({ title: approvalStatus === "approved" ? "Approve service?" : "Reject service?", message: `Are you sure you want to ${action} "${service.title}"?`, confirmLabel: approvalStatus === "approved" ? "Approve service" : "Reject service", danger: approvalStatus === "rejected" });
+    if (!accepted) return;
     setBusyId(service._id);
     setError("");
     setMessage("");
