@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { authenticatedFetch } from "@/lib/api";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 type User = { _id:string; name:string; email:string; image?:string; role:string; createdAt?:string };
 
 export default function AdminUsersPage(){
+  const confirm = useConfirm();
   const [users,setUsers]=useState<User[]>([]);
   const [loading,setLoading]=useState(true);
   const [savingId,setSavingId]=useState("");
@@ -26,7 +28,8 @@ export default function AdminUsersPage(){
 
   const changeRole=async(user:User,role:string)=>{
     if(!["customer","technician","admin"].includes(role) || role===user.role) return;
-    if(!window.confirm(`Change ${user.name}'s role from ${user.role} to ${role}?`)) return;
+    const accepted = await confirm({ title: "Change user role?", message: "Confirm changing " + user.name + " from " + user.role + " to " + role + "?", confirmLabel: "Change role", danger: role === "admin" });
+    if (!accepted) return;
     setError("");
     setNotice("");
     setSavingId(user._id);
