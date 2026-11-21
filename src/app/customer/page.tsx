@@ -86,6 +86,7 @@ export default function CustomerDashboard() {
             <h2 className="mt-4 text-2xl font-bold">View bookings →</h2>
             <p className="mt-3 text-gray-400">Track repair status, cancel pending requests, and pay completed bookings.</p>
           </Link>
+          <Link href="/customer/payments" className="rounded-2xl border border-gray-800 bg-[#111B2D] p-8 transition hover:border-lime-300"><p className="text-gray-400">Payments</p><h2 className="mt-4 text-2xl font-bold">View payment history →</h2><p className="mt-3 text-gray-400">Review your Stripe receipts and paid transactions.</p></Link>
           <Link href="/services" className="rounded-2xl border border-gray-800 bg-[#111B2D] p-8 transition hover:border-lime-300">
             <p className="text-gray-400">Explore Services</p>
             <h2 className="mt-4 text-2xl font-bold">Book a repair →</h2>
