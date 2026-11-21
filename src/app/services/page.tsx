@@ -28,6 +28,8 @@ export default function ServicesPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState(() => typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("category") || "All" : "All");
   const [sort, setSort] = useState("newest");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -39,6 +41,8 @@ export default function ServicesPage() {
         setError("");
 
         const params = new URLSearchParams();
+        params.set("page", String(page));
+        params.set("limit", "9");
         if (search.trim()) params.set("search", search.trim());
         if (category !== "All") params.set("category", category);
         if (sort !== "newest") params.set("sort", sort);
@@ -65,6 +69,7 @@ export default function ServicesPage() {
         );
 
         setServices(formattedServices);
+        setTotalPages(Math.max(1, Number(result.pagination?.totalPages) || 1));
       } catch (err) {
         setError("Unable to load services. Please try again later.");
       } finally {
@@ -73,7 +78,7 @@ export default function ServicesPage() {
     };
 
     fetchServices();
-  }, [search, category, sort]);
+  }, [search, category, sort, page]);
 
   const filteredServices = services;
 
@@ -261,6 +266,8 @@ export default function ServicesPage() {
           </div>
         )}
 
+        {!loading && totalPages > 1 && <div className="mt-10 flex items-center justify-center gap-4"><button onClick={()=>setPage(current=>Math.max(1,current-1))} disabled={page===1} className="rounded-xl border border-white/15 px-4 py-2 disabled:opacity-40">Previous</button><span className="text-sm text-gray-400">Page {page} of {totalPages}</span><button onClick={()=>setPage(current=>Math.min(totalPages,current+1))} disabled={page===totalPages} className="rounded-xl border border-white/15 px-4 py-2 disabled:opacity-40">Next</button></div>}
+
         {/* Empty State */}
         {!loading && !error && filteredServices.length === 0 && (
           <div className="rounded-2xl border border-white/10 bg-[#111827] px-6 py-16 text-center">
@@ -277,6 +284,7 @@ export default function ServicesPage() {
             <button
               onClick={() => {
                 setSearch("");
+                setPage(1);
                 setCategory("All");
                 setSort("newest");
                 window.history.replaceState({}, "", window.location.pathname);
