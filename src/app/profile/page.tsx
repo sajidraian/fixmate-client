@@ -44,8 +44,10 @@ export default function ProfilePage() {
           area: result.data.area || "",
           bio: result.data.bio || "",
         });
-      } catch {
-        router.replace("/login?redirect=/profile");
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to load profile."
+        );
       } finally {
         setLoading(false);
       }
