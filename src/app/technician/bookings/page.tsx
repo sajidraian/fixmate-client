@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { authenticatedFetch } from "@/lib/api";
+import { useToast } from "@/components/ToastProvider";
 
 interface Booking {
   _id: string;
@@ -28,6 +29,9 @@ export default function TechnicianBookingsPage() {
   const [error, setError] = useState("");
 const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [completionBooking, setCompletionBooking] = useState<Booking | null>(null);
+  const [finalAmountInput, setFinalAmountInput] = useState("");
+  const notify = useToast();
   const filteredBookings = statusFilter === "all" ? bookings : bookings.filter((booking) => booking.status === statusFilter);
   useEffect(() => {
     const loadBookings = async () => {
@@ -47,31 +51,13 @@ const [updatingId, setUpdatingId] = useState<string | null>(null);
   }, []);
 const handleStatusUpdate = async (
   bookingId: string,
-  status: string
+  status: string,
+  finalAmount?: number
 ) => {
-  let finalAmount: number | undefined;
-
-  if (status === "completed") {
-    const amount = prompt("Enter the final repair amount (BDT):");
-
-    if (amount === null) return;
-
-    finalAmount = Number(amount);
-
-    if (!Number.isFinite(finalAmount) || finalAmount <= 0) {
-      alert("Please enter a valid amount greater than zero.");
-      return;
-    }
-  }
-
   try {
     setUpdatingId(bookingId);
-
     const body: { status: string; finalAmount?: number } = { status };
-
-    if (finalAmount !== undefined) {
-      body.finalAmount = finalAmount;
-    }
+    if (finalAmount !== undefined) body.finalAmount = finalAmount;
 
     await authenticatedFetch(`/api/bookings/${bookingId}/status`, {
       method: "PATCH",
@@ -81,23 +67,33 @@ const handleStatusUpdate = async (
     setBookings((previous) =>
       previous.map((booking) =>
         booking._id === bookingId
-          ? {
-              ...booking,
-              status,
-              ...(finalAmount !== undefined ? { finalAmount } : {}),
-            }
+          ? { ...booking, status, ...(finalAmount !== undefined ? { finalAmount } : {}) }
           : booking
       )
     );
-
-    alert("Booking status updated successfully!");
-  } catch (err) {
-    alert(
-      err instanceof Error ? err.message : "Failed to update booking."
+    setCompletionBooking(null);
+    setFinalAmountInput("");
+    notify(
+      status === "completed" ? "Repair marked as completed. Customer can now pay securely." :
+      status === "accepted" ? "Booking accepted successfully." :
+      status === "rejected" ? "Booking request rejected." : "Repair status updated.",
+      "success"
     );
+  } catch (err) {
+    notify(err instanceof Error ? err.message : "Failed to update booking.", "error");
   } finally {
     setUpdatingId(null);
   }
+};
+
+const submitCompletion = () => {
+  if (!completionBooking) return;
+  const amount = Number(finalAmountInput);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    notify("Enter a valid final amount greater than zero.", "error");
+    return;
+  }
+  void handleStatusUpdate(completionBooking._id, "completed", amount);
 };
   const statusStyle: Record<string, string> = {
     requested: "bg-yellow-400/10 text-yellow-400",
@@ -263,7 +259,7 @@ const handleStatusUpdate = async (
 
   {booking.status === "in-progress" && (
     <button
-      onClick={() => handleStatusUpdate(booking._id, "completed")}
+      onClick={() => { setCompletionBooking(booking); setFinalAmountInput(booking.finalAmount ? String(booking.finalAmount) : ""); }}
       disabled={updatingId === booking._id}
       className="rounded-xl bg-green-500 px-5 py-3 font-bold text-white transition hover:bg-green-400 disabled:opacity-50"
     >
@@ -282,6 +278,20 @@ const handleStatusUpdate = async (
           </div>}
           </>
         )}
+      {completionBooking && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm" onClick={(event) => { if (event.target === event.currentTarget) setCompletionBooking(null); }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="complete-repair-title" className="w-full max-w-md rounded-3xl border border-white/10 bg-[#111B2D] p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#B8F36B]">Finish job</p><h2 id="complete-repair-title" className="mt-2 text-2xl font-bold">Complete repair</h2><p className="mt-2 text-sm text-gray-400">{completionBooking.serviceTitle}</p></div>
+              <button onClick={() => setCompletionBooking(null)} aria-label="Close" className="rounded-full border border-white/10 px-3 py-1 text-gray-400 hover:text-white">×</button>
+            </div>
+            <label htmlFor="final-repair-amount" className="mb-2 block text-sm font-medium text-gray-300">Final repair amount (BDT)</label>
+            <div className="flex items-center rounded-xl border border-white/10 bg-[#080D19] px-4 focus-within:border-[#B8F36B]/60"><span className="text-lg text-[#B8F36B]">৳</span><input id="final-repair-amount" autoFocus type="number" min="1" step="1" value={finalAmountInput} onChange={(event) => setFinalAmountInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") submitCompletion(); }} placeholder="e.g. 1000" className="w-full bg-transparent px-3 py-4 text-white outline-none placeholder:text-gray-600" /></div>
+            <p className="mt-2 text-xs text-gray-500">The customer will be able to pay this final amount after completion.</p>
+            <div className="mt-6 flex gap-3"><button onClick={() => setCompletionBooking(null)} className="flex-1 rounded-xl border border-white/15 px-4 py-3 font-semibold text-gray-300 hover:bg-white/5">Cancel</button><button onClick={submitCompletion} disabled={updatingId === completionBooking._id} className="flex-1 rounded-xl bg-[#B8F36B] px-4 py-3 font-bold text-[#080D19] hover:bg-white disabled:opacity-50">{updatingId === completionBooking._id ? "Saving..." : "Confirm completion"}</button></div>
+          </div>
+        </div>
+      )}
       </div>
     </main>
   );
