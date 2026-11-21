@@ -42,8 +42,6 @@ export default function RegisterPage() {
       });
     const responseText = await response.text();
 
-console.log("Registration status:", response.status);
-console.log("Registration response:", responseText);
 
 const result = responseText ? JSON.parse(responseText) : {};
 
@@ -56,12 +54,7 @@ if (!response.ok) {
   return;
 }
 
-      if (!response.ok) {
-        setError(result.message || result.error?.message || "Registration failed.");
-        return;
-      }
-
-      router.push("/login");
+      router.push("/sign-in");
     } catch (err) {
       console.error("Registration error:", err);
 
