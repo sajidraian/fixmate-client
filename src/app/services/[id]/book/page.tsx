@@ -38,7 +38,7 @@ export default function BookingPage() {
     const fetchService = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/services/${serviceId}`
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/services/${serviceId}`
         );
 
         const result = await response.json();
@@ -205,8 +205,9 @@ export default function BookingPage() {
                   value={formData.problemDescription}
                   onChange={handleChange}
                   required
+                  minLength={20}
                   rows={5}
-                  placeholder="Describe the device and the issue..."
+                  placeholder="Describe the device and the issue (at least 20 characters)..."
                   className="w-full bg-[#080D19] border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-[#B8F36B] resize-none"
                 />
               </div>
