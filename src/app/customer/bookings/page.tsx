@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { authenticatedFetch } from "@/lib/api";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 interface Booking {
   _id: string;
@@ -22,6 +23,7 @@ interface Booking {
 }
 
 export default function CustomerBookingsPage() {
+  const confirm = useConfirm();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -108,10 +110,7 @@ useEffect(() => {
 }, []);
 
   const handleCancel = async (bookingId: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to cancel this booking?"
-    );
-
+    const confirmed = await confirm({ title: "Cancel booking?", message: "Are you sure you want to cancel this booking? This action cannot be undone.", confirmLabel: "Cancel booking", danger: true });
     if (!confirmed) return;
 
     try {
@@ -123,9 +122,7 @@ useEffect(() => {
 
       await fetchBookings();
     } catch (err) {
-      alert(
-        err instanceof Error ? err.message : "Failed to cancel booking."
-      );
+      setError(err instanceof Error ? err.message : "Failed to cancel booking.");
     } finally {
       setCancellingId("");
     }
