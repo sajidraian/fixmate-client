@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 
 interface Service {
@@ -80,7 +79,6 @@ export default function ServicesPage() {
 
   return (
     <main className="min-h-screen bg-[#080D19] text-white">
-      <Navbar />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden px-6 py-20">
