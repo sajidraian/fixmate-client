@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 const services = [
   {
     icon: "❄️",
@@ -47,12 +46,7 @@ const services = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#080D19] text-white">
-      {/* NAVBAR */}
-           {/* NAVBAR */}
-      <Navbar />
-
-      {/* HERO */}
+    <main className="min-h-screen overflow-hidden bg-[#080D19] text-white">{/* HERO */}
       <section className="relative mx-auto grid max-w-7xl items-center gap-12 px-6 pb-24 pt-16 md:grid-cols-2 md:pt-24">
         <div className="pointer-events-none absolute -left-40 top-10 h-96 w-96 rounded-full bg-blue-600/10 blur-[120px]" />
 
@@ -278,23 +272,6 @@ export default function Home() {
           </Link>
         </div>
       </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-white/10 px-6 py-10">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-5 md:flex-row md:items-center">
-          <Link href="/" className="text-2xl font-black">
-            fix<span className="text-[#B8F36B]">mate.</span>
-          </Link>
-
-          <p className="text-sm text-gray-500">
-            Smart Device & Home Appliance Repair Platform.
-          </p>
-
-          <p className="text-xs text-gray-600">
-            © 2026 FixMate. All rights reserved.
-          </p>
-        </div>
-      </footer>
     </main>
   );
 }
