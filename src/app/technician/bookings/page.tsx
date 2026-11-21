@@ -73,14 +73,9 @@ const handleStatusUpdate = async (
     );
     setCompletionBooking(null);
     setFinalAmountInput("");
-    notify(
-      status === "completed" ? "Repair marked as completed. Customer can now pay securely." :
-      status === "accepted" ? "Booking accepted successfully." :
-      status === "rejected" ? "Booking request rejected." : "Repair status updated.",
-      "success"
-    );
+    // The shared API client displays a toast for every successful mutation.
   } catch (err) {
-    notify(err instanceof Error ? err.message : "Failed to update booking.", "error");
+    // The shared API client displays the error as a toast.
   } finally {
     setUpdatingId(null);
   }
