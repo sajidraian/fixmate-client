@@ -20,6 +20,8 @@ interface Booking {
   status: string;
   paymentStatus: string;
   createdAt: string;
+  statusHistory?: { status: string; at: string; by?: string }[];
+  review?: { rating: number; comment: string; createdAt: string };
 }
 
 export default function CustomerBookingsPage() {
@@ -31,6 +33,8 @@ export default function CustomerBookingsPage() {
   const [payingId, setPayingId] = useState("");
   const [verifyingId, setVerifyingId] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
+  const [reviewDrafts, setReviewDrafts] = useState<Record<string, { rating: number; comment: string }>>({});
+  const [reviewingId, setReviewingId] = useState("");
 
   const fetchBookings = async (): Promise<Booking[]> => {
     try {
@@ -145,6 +149,13 @@ useEffect(() => {
     } finally {
       setVerifyingId("");
     }
+  };
+
+  const handleReview = async (bookingId: string) => {
+    const draft = reviewDrafts[bookingId] || { rating: 5, comment: "" };
+    try { setReviewingId(bookingId); await authenticatedFetch(`/api/bookings/${bookingId}/review`, { method: "POST", body: JSON.stringify(draft) }); await fetchBookings(); }
+    catch (err) { setError(err instanceof Error ? err.message : "Could not submit review."); }
+    finally { setReviewingId(""); }
   };
 
   const handlePayment = async (bookingId: string) => {
@@ -379,6 +390,16 @@ useEffect(() => {
                     </div>
                   </div>
                 </div>
+                <div className="mt-6 border-t border-gray-800 pt-5">
+                  <h3 className="font-semibold text-[#B8F36B]">Booking Timeline</h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {(booking.statusHistory?.length ? booking.statusHistory : [{ status: "requested", at: booking.createdAt }]).map((entry, index) => <div key={index} className="rounded-xl border border-white/10 bg-[#080D19] px-3 py-2 text-xs"><p className="font-semibold capitalize text-white">{entry.status.replace("-", " ")}</p><p className="mt-1 text-gray-400">{new Date(entry.at).toLocaleString()}</p></div>)}
+                  </div>
+                </div>
+                {booking.status === "completed" && booking.paymentStatus === "paid" && <div className="mt-5 border-t border-gray-800 pt-5">
+                  {booking.review ? <div><h3 className="font-semibold text-[#B8F36B]">Your Review</h3><p className="mt-1 text-yellow-300">{"★".repeat(booking.review.rating)}{"☆".repeat(5-booking.review.rating)}</p><p className="mt-1 text-sm text-gray-300">{booking.review.comment || "No written comment."}</p></div> : <div><h3 className="font-semibold text-[#B8F36B]">Rate this repair</h3><div className="mt-3 flex flex-wrap items-center gap-3"><select aria-label="Rating" value={reviewDrafts[booking._id]?.rating ?? 5} onChange={event=>setReviewDrafts(current=>({...current,[booking._id]:{rating:Number(event.target.value),comment:current[booking._id]?.comment||""}}))} className="rounded-lg border border-white/10 bg-[#080D19] p-2 text-white">{[5,4,3,2,1].map(value=><option key={value} value={value}>{value} / 5 stars</option>)}</select><input value={reviewDrafts[booking._id]?.comment||""} onChange={event=>setReviewDrafts(current=>({...current,[booking._id]:{rating:current[booking._id]?.rating??5,comment:event.target.value}}))} maxLength={1000} placeholder="Share your experience (optional)" className="min-w-[220px] flex-1 rounded-lg border border-white/10 bg-[#080D19] px-3 py-2 text-sm text-white"/><button onClick={()=>void handleReview(booking._id)} disabled={reviewingId===booking._id} className="rounded-lg bg-[#B8F36B] px-4 py-2 text-sm font-bold text-[#080D19] disabled:opacity-50">{reviewingId===booking._id?"Submitting...":"Submit Review"}</button></div></div>}
+                  <div className="mt-4"><Link href={"/customer/invoices/"+booking._id} className="inline-block rounded-xl border border-[#B8F36B]/50 px-4 py-2 text-sm font-semibold text-[#B8F36B]">View / Print Invoice</Link></div>
+                </div>}
               </article>
             ))}
           </div>
