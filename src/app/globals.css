@@ -24,3 +24,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Optional accessible light theme. Dark remains the default. */
+:root[data-theme="light"] body { background: #f4f7fb !important; color: #172033 !important; }
+:root[data-theme="light"] main { background-color: #f4f7fb !important; color: #172033 !important; }
+:root[data-theme="light"] article, :root[data-theme="light"] .bg-\\[\\#111827\\], :root[data-theme="light"] .bg-\\[\\#111B2D\\], :root[data-theme="light"] .bg-\\[\\#151F30\\] { background-color: #ffffff !important; }
+:root[data-theme="light"] .text-white { color: #172033 !important; }
+:root[data-theme="light"] .text-gray-300, :root[data-theme="light"] .text-gray-400 { color: #526078 !important; }
+:root[data-theme="light"] .border-white\\/10, :root[data-theme="light"] .border-gray-800 { border-color: #d8e0ec !important; }
