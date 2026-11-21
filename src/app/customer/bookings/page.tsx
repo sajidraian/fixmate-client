@@ -27,6 +27,7 @@ export default function CustomerBookingsPage() {
   const [error, setError] = useState("");
   const [cancellingId, setCancellingId] = useState("");
   const [payingId, setPayingId] = useState("");
+  const [verifyingId, setVerifyingId] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
 
   const fetchBookings = async (): Promise<Booking[]> => {
@@ -127,6 +128,25 @@ useEffect(() => {
       );
     } finally {
       setCancellingId("");
+    }
+  };
+
+  const handleVerifyExistingPayment = async (bookingId: string) => {
+    try {
+      setVerifyingId(bookingId);
+      setPaymentMessage("Checking Stripe for an existing successful payment...");
+      const result = await authenticatedFetch("/api/payments/verify-checkout-session", {
+        method: "POST",
+        body: JSON.stringify({ bookingId }),
+      });
+      await fetchBookings();
+      setPaymentMessage(result.message || "Payment verified successfully.");
+    } catch (err) {
+      setPaymentMessage(
+        err instanceof Error ? err.message : "No confirmed payment was found. You can use Pay Now if you have not paid yet."
+      );
+    } finally {
+      setVerifyingId("");
     }
   };
 
@@ -335,17 +355,22 @@ useEffect(() => {
 
                         {booking.status === "completed" &&
                           booking.paymentStatus !== "paid" && (
-                            <button
-                              onClick={() =>
-                                handlePayment(booking._id)
-                              }
-                              disabled={payingId === booking._id}
-                              className="bg-[#B8F36B] text-[#080D19] px-6 py-2.5 rounded-xl font-bold hover:bg-white transition disabled:opacity-50"
-                            >
-                              {payingId === booking._id
-                                ? "Redirecting..."
-                                : "Pay Now →"}
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleVerifyExistingPayment(booking._id)}
+                                disabled={verifyingId === booking._id || payingId === booking._id}
+                                className="border border-[#B8F36B]/60 text-[#B8F36B] px-5 py-2.5 rounded-xl font-semibold hover:bg-[#B8F36B]/10 transition disabled:opacity-50"
+                              >
+                                {verifyingId === booking._id ? "Checking..." : "Verify Existing Payment"}
+                              </button>
+                              <button
+                                onClick={() => handlePayment(booking._id)}
+                                disabled={payingId === booking._id || verifyingId === booking._id}
+                                className="bg-[#B8F36B] text-[#080D19] px-6 py-2.5 rounded-xl font-bold hover:bg-white transition disabled:opacity-50"
+                              >
+                                {payingId === booking._id ? "Redirecting..." : "Pay Now →"}
+                              </button>
+                            </>
                           )}
 
                         {booking.paymentStatus === "paid" && (
