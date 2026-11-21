@@ -80,6 +80,20 @@ export default function CustomerDashboard() {
             </div>
           ))}
         </section>
+        <section className="mt-8 rounded-2xl border border-gray-800 bg-[#111B2D] p-6">
+          <h2 className="text-xl font-bold">Booking Overview</h2>
+          <p className="mt-1 text-sm text-gray-400">Your current repair journey at a glance.</p>
+          <div className="mt-5 space-y-4">
+            {[
+              ["Active", stats.active],
+              ["Completed", stats.completed],
+              ["Payment due", stats.unpaid],
+            ].map(([label, value]) => <div key={String(label)}>
+              <div className="mb-2 flex justify-between text-sm"><span className="text-gray-300">{label}</span><span className="text-lime-300">{value}</span></div>
+              <div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-lime-300" style={{ width: `${stats.total ? Math.max(2, Number(value) / stats.total * 100) : 0}%` }} /></div>
+            </div>)}
+          </div>
+        </section>
         <section className="mt-8 grid gap-6 md:grid-cols-2">
           <Link href="/customer/bookings" className="rounded-2xl border border-gray-800 bg-[#111B2D] p-8 transition hover:border-lime-300">
             <p className="text-gray-400">My Bookings</p>
