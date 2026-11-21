@@ -12,6 +12,7 @@ interface Profile {
   phone?: string;
   area?: string;
   bio?: string;
+  image?: string;
 }
 
 export default function ProfilePage() {
@@ -24,6 +25,7 @@ export default function ProfilePage() {
     phone: "",
     area: "",
     bio: "",
+    image: "",
   });
 
   const [loading, setLoading] = useState(true);
@@ -43,6 +45,7 @@ export default function ProfilePage() {
           phone: result.data.phone || "",
           area: result.data.area || "",
           bio: result.data.bio || "",
+          image: result.data.image || "",
         });
       } catch (err) {
         setError(
@@ -63,6 +66,39 @@ export default function ProfilePage() {
       ...profile,
       [event.target.name]: event.target.value,
     });
+  };
+
+
+  const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setError("Please choose an image file."); return; }
+    if (file.size > 5 * 1024 * 1024) { setError("Image must be smaller than 5 MB."); return; }
+    setSaving(true); setError(""); setMessage("");
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Could not read selected image."));
+        reader.readAsDataURL(file);
+      });
+      const uploaded = await authenticatedFetch("/api/uploads/image", {
+        method: "POST",
+        body: JSON.stringify({ image: base64 }),
+      });
+      const image = uploaded.data.url as string;
+      const updated = await authenticatedFetch("/api/users/profile", {
+        method: "PATCH",
+        body: JSON.stringify({ image }),
+      });
+      setProfile(previous => ({ ...previous, image: updated.data.image || image }));
+      setMessage("Profile photo updated successfully!");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Profile photo upload failed.");
+    } finally {
+      setSaving(false);
+      event.target.value = "";
+    }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -122,6 +158,12 @@ export default function ProfilePage() {
           <p className="text-gray-400 mt-2">
             Keep your personal information up to date.
           </p>
+        </div>
+
+
+        <div className="mb-6 flex flex-wrap items-center gap-5 rounded-2xl border border-gray-800 bg-[#111B2D] p-6">
+          {profile.image ? <img src={profile.image} alt="Profile" className="h-20 w-20 rounded-full object-cover" /> : <div className="grid h-20 w-20 place-items-center rounded-full bg-[#B8F36B]/15 text-3xl font-bold text-[#B8F36B]">{profile.name?.[0]?.toUpperCase() || "U"}</div>}
+          <div><p className="font-semibold">Profile Photo</p><p className="mt-1 text-sm text-gray-400">JPG, PNG or WEBP. Maximum 5 MB.</p><label className="mt-3 inline-flex cursor-pointer rounded-lg bg-[#B8F36B] px-4 py-2 text-sm font-bold text-[#080D19]">{saving ? "Uploading..." : "Upload Photo"}<input type="file" accept="image/*" onChange={handlePhotoChange} disabled={saving} className="hidden" /></label></div>
         </div>
 
         <form
