@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 
 interface Service {
@@ -79,37 +80,7 @@ export default function ServicesPage() {
 
   return (
     <main className="min-h-screen bg-[#080D19] text-white">
-      {/* Navbar */}
-      <nav className="border-b border-white/10 bg-[#080D19]/90">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link href="/" className="text-2xl font-black tracking-tight">
-            fixmate<span className="text-[#B8F36B]">.</span>
-          </Link>
-
-          <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-sm text-gray-300 transition hover:text-[#B8F36B]"
-            >
-              Home
-            </Link>
-
-            <Link
-              href="/services"
-              className="text-sm font-semibold text-[#B8F36B]"
-            >
-              Services
-            </Link>
-
-            <Link
-              href="/login"
-              className="rounded-full bg-[#B8F36B] px-5 py-2.5 text-sm font-bold text-[#080D19] transition hover:bg-white"
-            >
-              Sign In
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden px-6 py-20">
