@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
 type UserRole = "customer" | "technician" | "admin";
@@ -20,6 +20,9 @@ export default function Navbar() {
   const { data: session, isPending } = authClient.useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [lightMode, setLightMode] = useState(false);
+  useEffect(() => { const light = localStorage.getItem("fixmate-theme") === "light"; setLightMode(light); document.documentElement.dataset.theme = light ? "light" : "dark"; }, []);
+  const toggleTheme = () => { const next = !lightMode; setLightMode(next); document.documentElement.dataset.theme = next ? "light" : "dark"; localStorage.setItem("fixmate-theme", next ? "light" : "dark"); };
   const user = session?.user as SessionUser | undefined;
 
   const handleLogout = async () => {
@@ -59,9 +62,11 @@ export default function Navbar() {
             </div>
           ) : <><Link href="/sign-in" className="text-sm text-white hover:text-[#B8F36B]">Sign In</Link><Link href="/sign-up" className="rounded-full bg-[#B8F36B] px-5 py-2.5 text-sm font-bold text-[#080D19] hover:bg-white">Sign Up</Link></>}
         </div>
+        <button type="button" onClick={toggleTheme} className="mr-2 rounded-lg border border-white/15 px-3 py-2 text-sm text-white" aria-label="Toggle color theme">{lightMode ? "☀️" : "🌙"}</button>
         <button type="button" className="rounded-lg border border-white/15 px-3 py-2 text-white md:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation" aria-expanded={menuOpen}>{menuOpen ? "✕" : "☰"}</button>
       </div>
       {menuOpen && <div className="border-t border-white/10 bg-[#080D19] px-5 py-5 md:hidden"><div className="flex flex-col gap-5 text-sm">
+        <button type="button" onClick={toggleTheme} className="text-left text-[#B8F36B]">{lightMode ? "Switch to Dark Mode" : "Switch to Light Mode"}</button>
         {navLink("/", "Home")}{navLink("/services", "Services")}{navLink("/about", "How It Works")}
         {user ? <>{navLink(dashboardFor(user.role), "Dashboard")}{navLink("/dashboard/profile", "Update Profile")}<button onClick={handleLogout} className="text-left text-red-300">Sign Out</button></> : <>{navLink("/sign-in", "Sign In")}{navLink("/sign-up", "Sign Up")}</>}
       </div></div>}
