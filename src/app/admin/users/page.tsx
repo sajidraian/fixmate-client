@@ -12,11 +12,14 @@ export default function AdminUsersPage(){
   const [savingId,setSavingId]=useState("");
   const [error,setError]=useState("");
   const [notice,setNotice]=useState("");
+  const [page,setPage]=useState(1);
+  const [totalPages,setTotalPages]=useState(1);
 
   const load=async()=>{
     try {
-      const response=await authenticatedFetch("/api/admin/users");
+      const response=await authenticatedFetch("/api/admin/users?page="+page+"&limit=10");
       setUsers(response.data||[]);
+      setTotalPages(Math.max(1,Number(response.pagination?.totalPages)||1));
     } catch(e) {
       setError(e instanceof Error?e.message:"Could not load users.");
     } finally {
@@ -24,7 +27,7 @@ export default function AdminUsersPage(){
     }
   };
 
-  useEffect(()=>{ void load(); },[]);
+  useEffect(()=>{ void load(); },[page]);
 
   const changeRole=async(user:User,role:string)=>{
     if(!["customer","technician","admin"].includes(role) || role===user.role) return;
@@ -66,6 +69,7 @@ export default function AdminUsersPage(){
           </tr>)}</tbody>
         </table>
         {!users.length&&<p className="p-8 text-center text-gray-400">No users found.</p>}
+        {totalPages>1&&<div className="flex items-center justify-center gap-4 border-t border-white/10 p-4"><button onClick={()=>setPage(value=>Math.max(1,value-1))} disabled={page===1} className="rounded-lg border border-white/15 px-4 py-2 disabled:opacity-40">Previous</button><span className="text-sm text-gray-400">Page {page} of {totalPages}</span><button onClick={()=>setPage(value=>Math.min(totalPages,value+1))} disabled={page===totalPages} className="rounded-lg border border-white/15 px-4 py-2 disabled:opacity-40">Next</button></div>}
       </div>}
     </div>
   </main>;
