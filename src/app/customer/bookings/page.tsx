@@ -70,7 +70,7 @@ useEffect(() => {
       try {
         await authenticatedFetch("/api/payments/verify-checkout-session", {
           method: "POST",
-          body: JSON.stringify({ sessionId }),
+          body: JSON.stringify({ sessionId: sessionId || undefined, bookingId }),
         });
       } catch {
         // The Stripe webhook may still confirm the payment; keep polling below.
