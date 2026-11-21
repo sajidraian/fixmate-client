@@ -42,19 +42,30 @@ export default function CustomerBookingsPage() {
     }
   };
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const paymentStatus = params.get("payment");
 
-    if (params.get("payment") === "success") {
-      setPaymentMessage(
-        "Payment submitted successfully! Your payment status will update after verification."
-      );
-    } else if (params.get("payment") === "cancelled") {
-      setPaymentMessage("Payment was cancelled. You can try again anytime.");
-    }
+  if (paymentStatus === "success") {
+    setPaymentMessage(
+      "Payment submitted successfully! Your payment status will update after Stripe verification."
+    );
+  } else if (paymentStatus === "cancelled") {
+    setPaymentMessage(
+      "Payment was cancelled. You can try again anytime."
+    );
+  }
 
-    fetchBookings();
-  }, []);
+  if (paymentStatus) {
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname
+    );
+  }
+
+  fetchBookings();
+}, []);
 
   const handleCancel = async (bookingId: string) => {
     const confirmed = window.confirm(
