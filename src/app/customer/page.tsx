@@ -21,6 +21,7 @@ export default function CustomerDashboard() {
   useEffect(() => {
     let active = true;
     const loadDashboard = async () => {
+      let profileLoaded = false;
       try {
         const profile = await authenticatedFetch("/api/users/me");
         if (profile.data.role !== "customer") {
@@ -29,6 +30,7 @@ export default function CustomerDashboard() {
         }
         if (!active) return;
         setUser(profile.data);
+        profileLoaded = true;
         const result = await authenticatedFetch("/api/bookings/my");
         if (!active) return;
         const bookings: Booking[] = result.data || [];
@@ -40,7 +42,7 @@ export default function CustomerDashboard() {
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unable to load dashboard data.");
-        router.replace("/login?redirect=/customer");
+        if (!profileLoaded) router.replace("/login?redirect=/customer");
       } finally {
         if (active) setLoading(false);
       }

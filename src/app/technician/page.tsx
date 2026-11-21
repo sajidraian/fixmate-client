@@ -26,6 +26,7 @@ export default function TechnicianDashboard() {
   useEffect(() => {
     let active = true;
     const loadDashboard = async () => {
+      let profileLoaded = false;
       try {
         const profile = await authenticatedFetch("/api/users/me");
         if (profile.data.role !== "technician") {
@@ -34,6 +35,7 @@ export default function TechnicianDashboard() {
         }
         if (!active) return;
         setUser(profile.data);
+        profileLoaded = true;
 
         const [bookingResult, serviceResult] = await Promise.all([
           authenticatedFetch("/api/bookings/technician"),
@@ -51,7 +53,7 @@ export default function TechnicianDashboard() {
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unable to load dashboard data.");
-        if (!user) router.replace("/login?redirect=/technician");
+        if (!profileLoaded) router.replace("/login?redirect=/technician");
       } finally {
         if (active) setLoading(false);
       }
