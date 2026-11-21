@@ -57,7 +57,7 @@ export default function ProfilePage() {
     };
 
     loadProfile();
-  }, [router]);
+  }, []);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -144,10 +144,6 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-[#080D19] text-white px-5 py-10">
       <div className="max-w-3xl mx-auto">
-        <Link href="/" className="text-lime-300 text-2xl font-bold">
-          fixmate.
-        </Link>
-
         <div className="mt-10 mb-8">
           <p className="text-lime-300 uppercase tracking-widest text-sm">
             Account Settings
