@@ -4,8 +4,10 @@ FixMate connects customers with repair technicians for home appliances and smart
 
 ## Repositories
 
-- Frontend: https://github.com/sajidraian/fixmate-client
-- Backend: https://github.com/sajidraian/fixmate-server
+- Frontend repository: https://github.com/sajidraian/fixmate-client
+- Backend repository: https://github.com/sajidraian/fixmate-server
+- Live frontend: https://fixmate-client-psi.vercel.app
+- Live backend: https://fixmate-server-x1b6.onrender.com/
 
 ## Implemented Features
 
@@ -140,7 +142,7 @@ npm run lint
 
 ## Notes
 
-Live deployment URLs are intentionally not listed until deployments exist and have been verified.
+Production deployment: the frontend is hosted on Vercel and the Express API is hosted on Render. Confirm the hosting dashboards show the latest deployment as Ready/Live before presenting the site.
 
 
 ## Assignment Optional Features
