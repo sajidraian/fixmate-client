@@ -3,18 +3,13 @@ import Link from "next/link";
 const categories = ["AC & Cooling", "Refrigerator", "Washing Machine", "TV & Display", "Kitchen Appliances"];
 
 export default function Footer() {
-  return (
-    <footer className="border-t border-white/10 bg-[#080D19] px-6 py-12 text-white">
-      <div className="mx-auto grid max-w-7xl gap-10 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <Link href="/" className="text-2xl font-black text-[#B8F36B]">fixmate.</Link>
-          <p className="mt-4 max-w-xs text-sm leading-6 text-gray-400">Smart device and home appliance repairs, made simple. Find trusted technicians and track every repair.</p>
-        </div>
-        <div><h2 className="font-bold">Quick Links</h2><div className="mt-4 flex flex-col gap-3 text-sm text-gray-400"><Link href="/">Home</Link><Link href="/services">Services</Link><Link href="/about">How It Works</Link><Link href="/sign-up">Create Account</Link></div></div>
-        <div><h2 className="font-bold">Popular Categories</h2><div className="mt-4 flex flex-col gap-3 text-sm text-gray-400">{categories.map(category=><Link key={category} href={`/services?category=${encodeURIComponent(category)}`}>{category}</Link>)}</div></div>
-        <div><h2 className="font-bold">Get in Touch</h2><p className="mt-4 text-sm leading-6 text-gray-400">Need help with a repair? Browse services and send a request to a technician.</p><Link href="/services" className="mt-4 inline-block text-sm font-semibold text-[#B8F36B]">Find a Service ↗</Link><div className="mt-4"><a href="https://x.com" target="_blank" rel="noreferrer" className="text-sm text-gray-400 hover:text-[#B8F36B]">X / Twitter</a></div></div>
-      </div>
-      <div className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 text-xs text-gray-500">© {new Date().getFullYear()} FixMate. All rights reserved.</div>
-    </footer>
-  );
+  return <footer className="border-t border-white/10 bg-[#070C16] px-6 pb-8 pt-14 text-white">
+    <div className="mx-auto grid max-w-7xl gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+      <div><Link href="/" className="inline-flex items-center gap-2 text-2xl font-black text-[#B8F36B]"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B8F36B]/10">⌁</span>fixmate<span className="text-white">.</span></Link><p className="mt-4 max-w-xs text-sm leading-7 text-slate-400">Smart device and home appliance repairs, made simple. Find trusted technicians and keep every repair moving.</p></div>
+      <div><h2 className="text-sm font-extrabold">Explore</h2><div className="mt-4 flex flex-col gap-3 text-sm text-slate-400"><Link className="hover:text-[#B8F36B]" href="/">Home</Link><Link className="hover:text-[#B8F36B]" href="/services">All services</Link><Link className="hover:text-[#B8F36B]" href="/about">How it works</Link><Link className="hover:text-[#B8F36B]" href="/sign-up">Create account</Link></div></div>
+      <div><h2 className="text-sm font-extrabold">Popular repairs</h2><div className="mt-4 flex flex-col gap-3 text-sm text-slate-400">{categories.map(category=><Link className="hover:text-[#B8F36B]" key={category} href="/services">{category}</Link>)}</div></div>
+      <div><h2 className="text-sm font-extrabold">Need a hand?</h2><p className="mt-4 text-sm leading-7 text-slate-400">Browse available services and send a repair request to a technician.</p><Link href="/services" className="mt-5 inline-flex rounded-xl bg-[#B8F36B] px-5 py-3 text-sm font-extrabold text-[#080D19] transition hover:bg-white">Find a service ↗</Link></div>
+    </div>
+    <div className="mx-auto mt-12 flex max-w-7xl flex-col gap-3 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between"><span>© {new Date().getFullYear()} FixMate. All rights reserved.</span><span>Repair smarter. Live easier.</span></div>
+  </footer>;
 }
