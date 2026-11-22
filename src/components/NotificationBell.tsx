@@ -152,7 +152,7 @@ export default function NotificationBell() {
         aria-expanded={open}
         className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-lg transition hover:border-[#B8F36B]/50"
       >
-        <span aria-hidden="true">♢</span>
+        <span aria-hidden="true">🔔</span>
         {unreadCount > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#B8F36B] px-1 text-[10px] font-black text-[#080D19]">{unreadCount > 99 ? "99+" : unreadCount}</span>}
       </button>
 
