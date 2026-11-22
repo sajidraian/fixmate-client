@@ -253,3 +253,7 @@ The production frontend is hosted on Vercel.
 ## 📄 License
 
 This repository currently does not declare an open-source license. Contact the repository owner before redistributing or reusing the code.
+
+## Real-time Notifications
+
+Signed-in users receive live in-app notifications for new booking requests, booking status changes, booking cancellations, and service approval decisions. Use the notification bell in the main navigation to review unread updates and notification history. Notifications are retained with the user's account (up to the latest 100 entries).
