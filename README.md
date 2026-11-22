@@ -141,3 +141,21 @@ npm run lint
 ## Notes
 
 Live deployment URLs are intentionally not listed until deployments exist and have been verified.
+
+
+## Assignment Optional Features
+
+- **Reviews & Ratings:** Customers can submit one 1–5 star review with a comment after a booking is completed and paid.
+- **Booking Timeline:** Booking status history records requested, accepted/rejected, in-progress, completed, and customer cancellation events.
+- **Pagination:** Service discovery, customer bookings, technician bookings, admin users, and admin bookings support paginated results.
+- **Payment Invoice:** Customers can view and print/save an invoice for a successfully paid booking.
+- **Dark Mode:** Site-wide dark/light theme switch with the selected theme saved in the browser.
+
+## Additional Dashboard Routes
+
+| Route | Purpose |
+|---|---|
+| `/customer/invoices/[bookingId]` | View and print a paid booking invoice |
+| `/admin/users` | Manage user roles |
+| `/admin/bookings` | Review bookings |
+| `/admin/services` | Approve or reject service listings |
