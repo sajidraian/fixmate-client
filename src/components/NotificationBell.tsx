@@ -4,7 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
-const API_URL = "https://fixmate-server-x1b6.onrender.com";
+const PRODUCTION_API_URL = "https://fixmate-server-x1b6.onrender.com";
+// Preview deployments must opt into a staging API explicitly. Never let a
+// preview build silently write notifications to the production backend.
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\\/$/, "") ||
+  (process.env.VERCEL_ENV === "preview" ? "" : PRODUCTION_API_URL);
 
 type NotificationItem = {
   _id: string;
@@ -26,6 +31,10 @@ export default function NotificationBell() {
   const userEmail = session?.user?.email;
 
   const loadNotifications = useCallback(async () => {
+    if (!API_URL) {
+      setItems([]);
+      return;
+    }
     const { data, error } = await authClient.token();
     if (error || !data?.token) {
       setItems([]);
@@ -49,7 +58,7 @@ export default function NotificationBell() {
   }, [userEmail, loadNotifications]);
 
   useEffect(() => {
-    if (!userEmail) return;
+    if (!userEmail || !API_URL) return;
     const controller = new AbortController();
 
     const connect = async () => {
@@ -110,6 +119,7 @@ export default function NotificationBell() {
   }, [userEmail]);
 
   const markRead = async (id: string) => {
+    if (!API_URL) return;
     const { data, error } = await authClient.token();
     if (error || !data?.token) return;
     await fetch(API_URL + "/api/notifications/" + id + "/read", {
@@ -120,7 +130,7 @@ export default function NotificationBell() {
   };
 
   const markAllRead = async () => {
-    if (!unreadCount) return;
+    if (!API_URL || !unreadCount) return;
     setBusy(true);
     try {
       const { data, error } = await authClient.token();
