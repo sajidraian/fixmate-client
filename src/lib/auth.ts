@@ -32,6 +32,10 @@ export const auth = betterAuth({
   database: mongodbAdapter(db, { client }),
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
   secret: authSecret,
+  trustedOrigins: [
+    "https://fixmate-client-psi.vercel.app",
+    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+  ],
 
   emailAndPassword: {
     enabled: true,
