@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
+const PRODUCTION_ORIGIN = "https://fixmate-client-psi.vercel.app";
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -50,22 +52,36 @@ export default function LoginPage() {
     }
   };
 
-  // Google Login
+  // Google OAuth must start and finish on the same production host.
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setError("");
 
+    if (
+      process.env.NODE_ENV === "production" &&
+      window.location.origin !== PRODUCTION_ORIGIN
+    ) {
+      const canonicalLoginURL = new URL(
+        window.location.pathname + window.location.search,
+        PRODUCTION_ORIGIN
+      );
+      window.location.assign(canonicalLoginURL.toString());
+      return;
+    }
+
     try {
       const { error: authError } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: getRedirectPath(),
+        callbackURL: new URL(getRedirectPath(), PRODUCTION_ORIGIN).toString(),
       });
 
       if (authError) {
-        setError(authError.message || "Google sign-in failed.");
+        console.error("FixMate Google sign-in error:", authError);
+        setError(authError.message || "Google sign-in could not be started. Check the Google OAuth configuration.");
         setGoogleLoading(false);
       }
     } catch (err) {
+      console.error("FixMate Google sign-in exception:", err);
       setError(
         err instanceof Error
           ? err.message
