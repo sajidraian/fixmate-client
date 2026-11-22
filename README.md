@@ -16,14 +16,6 @@ Discover trusted technicians. Book a repair in minutes. Follow every update. Pay
 
 </div>
 
-<p align="center">
-  <a href="https://fixmate-client-psi.vercel.app"><img src="https://img.shields.io/badge/Live%20App-Visit%20FixMate-84cc16?style=for-the-badge&logo=vercel&logoColor=white" alt="Live app" /></a>
-  <a href="https://github.com/sajidraian/fixmate-client/actions/workflows/ci.yml"><img src="https://github.com/sajidraian/fixmate-client/actions/workflows/ci.yml/badge.svg?branch=main" alt="Frontend CI" /></a>
-  <img src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs" alt="Next.js" />
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-</p>
-
 ---
 
 > **One platform. Three roles. A smoother repair experience.**  
