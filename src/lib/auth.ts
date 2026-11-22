@@ -30,7 +30,7 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
 // Keep production OAuth callbacks on the exact domain registered in Google Cloud.
 // Vercel preview URLs are still accepted separately through trustedOrigins below.
-const configuredAuthUrl = process.env.BETTER_AUTH_URL?.trim().replace(/\\/+$/, "");
+const configuredAuthUrl = process.env.BETTER_AUTH_URL?.trim();
 const authBaseURL =
   process.env.NODE_ENV === "production"
     ? "https://fixmate-client-psi.vercel.app"
