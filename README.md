@@ -1,9 +1,20 @@
-# FixMate — Frontend
+<div align="center">
 
-<p align="center">
-  <strong>Smart Device & Home Appliance Repair Platform</strong><br />
-  Discover trusted repair services, book technicians, and track every repair in one place.
-</p>
+# 🔧 FixMate
+
+### Your device deserves a second life.
+
+**Smart Device & Home Appliance Repair Platform**
+
+Discover trusted technicians. Book a repair in minutes. Follow every update. Pay securely.
+
+[![Live App](https://img.shields.io/badge/🚀_LAUNCH_APP-FixMate-84cc16?style=for-the-badge)](https://fixmate-client-psi.vercel.app)
+[![Frontend CI](https://github.com/sajidraian/fixmate-client/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sajidraian/fixmate-client/actions/workflows/ci.yml)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+
+</div>
 
 <p align="center">
   <a href="https://fixmate-client-psi.vercel.app"><img src="https://img.shields.io/badge/Live%20App-Visit%20FixMate-84cc16?style=for-the-badge&logo=vercel&logoColor=white" alt="Live app" /></a>
@@ -15,6 +26,20 @@
 
 ---
 
+> **One platform. Three roles. A smoother repair experience.**  
+> FixMate brings customers, technicians, and administrators together in one modern repair workflow.
+
+## 🧭 Explore the README
+
+- [What FixMate does](#-overview)
+- [Features](#-features)
+- [Tech stack](#-tech-stack)
+- [Application routes](#️-application-routes)
+- [Getting started](#-getting-started)
+- [Roles and booking journey](#-roles-and-access)
+- [Assignment features](#-assignment-optional-features)
+- [Testing and deployment](#-testing-and-ci)
+
 ## ✨ Overview
 
 **FixMate** is the customer-facing web application for a full-stack repair service platform. It connects customers with technicians who repair smart devices and home appliances. Customers can explore approved services, book a repair, follow job progress, pay securely, and review completed work. Technicians manage their services and assigned jobs, while administrators moderate service listings and manage the platform.
@@ -22,6 +47,12 @@
 **Live application:** https://fixmate-client-psi.vercel.app  
 **Backend API:** https://fixmate-server-x1b6.onrender.com/  
 **Backend repository:** https://github.com/sajidraian/fixmate-server
+
+## 🚀 Built for the complete repair journey
+
+| 🧑‍💻 Customers | 🛠️ Technicians | 🛡️ Admins |
+|---|---|---|
+| Find, book, track & pay | Publish services & manage jobs | Approve services & manage users |
 
 ## 🚀 Features
 
@@ -180,7 +211,7 @@ Public registration is limited to customer and technician roles. Admin accounts 
 6. The customer pays through Stripe Checkout.
 7. The customer can view the invoice and submit a review.
 
-## 🌙 Assignment optional features
+## 🌙 Extra touches that complete the experience
 
 - **Reviews & Ratings:** One 1–5 star review with a comment for an eligible paid, completed booking.
 - **Booking Timeline:** Timestamped booking status history.
@@ -213,6 +244,15 @@ The production frontend is hosted on Vercel.
 5. Add the deployed frontend origin to the backend `FRONTEND_URL` and `CORS_ORIGINS`.
 6. Configure Google OAuth authorized origins and BetterAuth callback URL if Google sign-in is enabled.
 7. Redeploy after changing environment variables.
+
+---
+
+<div align="center">
+
+**Made to make repairs feel effortless.**  
+[Open FixMate](https://fixmate-client-psi.vercel.app) · [Backend API](https://fixmate-server-x1b6.onrender.com/)
+
+</div>
 
 ## 🔗 Related project
 
