@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import NotificationBell from "@/components/NotificationBell";
 
 type UserRole = "customer" | "technician" | "admin";
 type SessionUser = { name?: string | null; email?: string | null; image?: string | null; role?: UserRole };
@@ -28,6 +29,7 @@ export default function Navbar() {
       <Link href="/" onClick={closeMenu} className="flex shrink-0 items-center gap-2 text-2xl font-black tracking-tight text-[#B8F36B]"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B8F36B]/10 text-lg">⌁</span>fixmate<span className="text-white">.</span></Link>
       <div className="hidden items-center gap-1 rounded-xl border border-white/5 bg-white/[.03] p-1 md:flex"><Link className={linkClass("/")} href="/">Home</Link><Link className={linkClass("/services")} href="/services">Services</Link><Link className={linkClass("/about")} href="/about">How it works</Link></div>
       <div className="flex items-center gap-2">
+        <NotificationBell />
         <button type="button" onClick={toggleTheme} className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-lg transition hover:border-[#B8F36B]/50" aria-label={lightMode ? "Switch to dark mode" : "Switch to light mode"} title={lightMode ? "Dark mode" : "Light mode"}>{lightMode ? "☀️" : "🌙"}</button>
         <div className="hidden items-center gap-2 md:flex">
           {isPending ? <span className="px-3 text-xs text-slate-400">Loading…</span> : user ? <div className="relative">
