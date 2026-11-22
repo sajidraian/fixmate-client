@@ -71,7 +71,12 @@ export default function ServicesPage() {
         setServices(formattedServices);
         setTotalPages(Math.max(1, Number(result.pagination?.totalPages) || 1));
       } catch (err) {
-        setError("Unable to load services. Please try again later.");
+        console.error("Services request failed:", err);
+        setError(
+          err instanceof Error
+            ? `Unable to load services: ${err.message}`
+            : "Unable to load services. Please try again later."
+        );
       } finally {
         setLoading(false);
       }
