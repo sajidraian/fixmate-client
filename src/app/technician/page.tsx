@@ -29,7 +29,7 @@ export default function TechnicianDashboard() {
         const bookings: Booking[] = bookingResult.data || [];
         const services: Service[] = serviceResult.data || [];
         setStats({ services: services.length, pending: bookings.filter(b=>b.status==="requested").length, active: bookings.filter(b=>["accepted","in-progress"].includes(b.status)).length, completed: bookings.filter(b=>b.status==="completed").length, paidEarnings: bookings.filter(b=>b.status==="completed"&&b.paymentStatus==="paid").reduce((sum,b)=>sum+Number(b.finalAmount||0),0) });
-      } catch (err) { setError(err instanceof Error ? err.message : "Unable to load dashboard data."); if (!profileLoaded) router.replace("/login?redirect=/technician"); }
+      } catch (err) { setError(err instanceof Error ? err.message : "Unable to load dashboard data."); if (!profileLoaded && err instanceof Error && err.message === "Please login to continue.") router.replace("/login?redirect=/technician"); }
       finally { if (active) setLoading(false); }
     };
     loadDashboard(); return () => { active = false; };
