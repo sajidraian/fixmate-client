@@ -40,7 +40,7 @@ export default function CustomerBookingsPage() {
 
   const fetchBookings = async (): Promise<Booking[]> => {
     try {
-      const result = await authenticatedFetch("/api/bookings/my?page=" + page + "&limit=10");
+      const result = await authenticatedFetch("/api/bookings/my?page=" + page + "&limit=2");
       const items: Booking[] = result.data || [];
       setBookings(items);
       setTotalPages(Math.max(1, Number(result.pagination?.totalPages) || 1));
