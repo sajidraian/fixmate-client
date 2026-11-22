@@ -34,7 +34,7 @@ export default function CustomerDashboard() {
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unable to load dashboard data.");
-        if (!profileLoaded) router.replace("/login?redirect=/customer");
+        if (!profileLoaded && err instanceof Error && err.message === "Please login to continue.") router.replace("/login?redirect=/customer");
       } finally { if (active) setLoading(false); }
     };
     loadDashboard();
