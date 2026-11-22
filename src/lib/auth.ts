@@ -25,15 +25,16 @@ if (!authSecret) {
 const client = new MongoClient(mongoUri);
 const db = client.db(process.env.DB_NAME || "fixmate");
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
 
-// Keep production OAuth callbacks on the exact domain registered in Google Cloud.
-// Vercel preview URLs are still accepted separately through trustedOrigins below.
+// Google OAuth must always use the same canonical production origin so that
+// the OAuth state cookie is created and read on the same host.
+const productionAuthURL = "https://fixmate-client-psi.vercel.app";
 const configuredAuthUrl = process.env.BETTER_AUTH_URL?.trim();
 const authBaseURL =
   process.env.NODE_ENV === "production"
-    ? "https://fixmate-client-psi.vercel.app"
+    ? productionAuthURL
     : configuredAuthUrl || "http://localhost:3000";
 
 export const auth = betterAuth({
@@ -41,9 +42,21 @@ export const auth = betterAuth({
   baseURL: authBaseURL,
   secret: authSecret,
   trustedOrigins: [
-    "https://fixmate-client-psi.vercel.app",
+    productionAuthURL,
+    "http://localhost:3000",
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
   ],
+
+  // Link Google only to an existing account with the same email address.
+  // Google is trusted as the identity provider; different-email linking stays disabled.
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"],
+      disableImplicitLinking: false,
+      allowDifferentEmails: false,
+    },
+  },
 
   emailAndPassword: {
     enabled: true,
@@ -56,6 +69,7 @@ export const auth = betterAuth({
           google: {
             clientId: googleClientId,
             clientSecret: googleClientSecret,
+            prompt: "select_account",
           },
         },
       }
