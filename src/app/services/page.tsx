@@ -86,7 +86,7 @@ export default function ServicesPage() {
     <main className="min-h-screen bg-[#080D19] text-white">
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden px-6 py-20">
+      <section className="relative overflow-hidden border-b border-white/5 px-6 py-20 md:py-24">
         <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-[#B8F36B]/10 blur-[100px]" />
 
         <div className="relative mx-auto max-w-7xl">
@@ -95,7 +95,7 @@ export default function ServicesPage() {
             PROFESSIONAL REPAIR SERVICES
           </div>
 
-          <h1 className="max-w-3xl text-4xl font-black leading-tight md:text-6xl">
+          <h1 className="max-w-3xl text-4xl font-black leading-[1.08] tracking-tight md:text-6xl">
             The right fix.
             <br />
             <span className="text-[#B8F36B]">Right when you need it.</span>
@@ -117,7 +117,7 @@ export default function ServicesPage() {
       {/* Services Section */}
       <section className="mx-auto max-w-7xl px-6 pb-24">
         {/* Search */}
-        <div className="mb-8 rounded-2xl border border-white/10 bg-[#111827] p-3 md:flex md:items-center md:gap-4">
+        <div className="mb-8 rounded-2xl border border-white/10 bg-[#111827] p-3 shadow-xl shadow-black/10 md:flex md:items-center md:gap-4">
           <div className="flex flex-1 items-center gap-3 px-3">
             <span className="text-xl">⌕</span>
 
@@ -212,7 +212,7 @@ export default function ServicesPage() {
             {filteredServices.map((service) => (
               <article
                 key={service.id}
-                className="group flex flex-col rounded-2xl border border-white/10 bg-[#111827] p-6 transition duration-300 hover:-translate-y-1 hover:border-[#B8F36B]/50 hover:bg-[#151F30]"
+                className="group flex flex-col rounded-2xl border border-white/10 bg-[#111827] p-6 shadow-lg shadow-black/5 transition duration-300 hover:-translate-y-1 hover:border-[#B8F36B]/50 hover:bg-[#151F30] hover:shadow-xl"
               >
                 <div className="mb-6 flex items-start justify-between">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#B8F36B]/20 bg-[#B8F36B]/10 text-3xl">
@@ -254,7 +254,7 @@ export default function ServicesPage() {
 
                 <Link
                   href={`/services/${service.id}`}
-                  className="flex items-center justify-between rounded-xl bg-white/5 px-5 py-3.5 text-sm font-bold transition hover:bg-[#B8F36B] hover:text-[#080D19]"
+                  className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[.04] px-5 py-3.5 text-sm font-bold transition hover:border-[#B8F36B] hover:bg-[#B8F36B] hover:text-[#080D19]"
                 >
                   View Details
                   <span className="text-lg transition group-hover:translate-x-1">
