@@ -5,11 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authenticatedFetch } from "@/lib/api";
 
-interface Booking {
-  _id: string;
-  status: string;
-  paymentStatus: string;
-}
+interface Booking { _id: string; status: string; paymentStatus: string; }
 
 export default function CustomerDashboard() {
   const router = useRouter();
@@ -24,13 +20,9 @@ export default function CustomerDashboard() {
       let profileLoaded = false;
       try {
         const profile = await authenticatedFetch("/api/users/me");
-        if (profile.data.role !== "customer") {
-          router.replace("/");
-          return;
-        }
+        if (profile.data.role !== "customer") { router.replace("/"); return; }
         if (!active) return;
-        setUser(profile.data);
-        profileLoaded = true;
+        setUser(profile.data); profileLoaded = true;
         const result = await authenticatedFetch("/api/bookings/my");
         if (!active) return;
         const bookings: Booking[] = result.data || [];
@@ -43,71 +35,42 @@ export default function CustomerDashboard() {
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unable to load dashboard data.");
         if (!profileLoaded) router.replace("/login?redirect=/customer");
-      } finally {
-        if (active) setLoading(false);
-      }
+      } finally { if (active) setLoading(false); }
     };
     loadDashboard();
     return () => { active = false; };
   }, [router]);
 
-  if (loading) return <main className="min-h-screen bg-[#080D19] flex items-center justify-center text-lime-300">Loading Dashboard...</main>;
+  if (loading) return <main className="flex min-h-[65vh] items-center justify-center bg-[#080D19] text-[#B8F36B]">Loading your dashboard…</main>;
   if (!user) return null;
 
   const cards = [
-    { label: "Total Bookings", value: stats.total, detail: "All your repair requests" },
-    { label: "Active Repairs", value: stats.active, detail: "Requests and ongoing repairs" },
-    { label: "Completed Repairs", value: stats.completed, detail: "Finished repair jobs" },
-    { label: "Payments Due", value: stats.unpaid, detail: "Completed bookings awaiting payment" },
+    { label: "Total bookings", value: stats.total, icon: "▤", note: "All repair requests", color: "from-sky-400/15 to-sky-400/0" },
+    { label: "Active repairs", value: stats.active, icon: "◷", note: "In progress or awaiting", color: "from-amber-300/15 to-amber-300/0" },
+    { label: "Completed", value: stats.completed, icon: "✓", note: "Successfully repaired", color: "from-lime-300/15 to-lime-300/0" },
+    { label: "Payments due", value: stats.unpaid, icon: "৳", note: "Ready for checkout", color: "from-violet-400/15 to-violet-400/0" },
+  ];
+  const shortcuts = [
+    { href: "/services", icon: "⌕", title: "Book a repair", detail: "Find the right service for your device.", action: "Explore services" },
+    { href: "/customer/bookings", icon: "▤", title: "My bookings", detail: "Follow your repair from request to completion.", action: "Track bookings" },
+    { href: "/customer/payments", icon: "৳", title: "Payment history", detail: "See your completed and paid transactions.", action: "View payments" },
   ];
 
-  return (
-    <main className="min-h-screen bg-[#080D19] text-white p-6 md:p-10">
-      <div className="max-w-6xl mx-auto">
-        <Link href="/" className="text-lime-300 text-xl font-bold">fixmate.</Link>
-        <section className="mt-12">
-          <p className="text-lime-300 text-sm uppercase tracking-widest">Customer Dashboard</p>
-          <h1 className="text-3xl md:text-5xl font-bold mt-3">Welcome, {user.name || "Customer"}!</h1>
-          <p className="text-gray-400 mt-3">{user.email}</p>
-        </section>
-        {error && <p role="alert" className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">{error}</p>}
-        <section className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {cards.map((card) => (
-            <div key={card.label} className="rounded-2xl border border-gray-800 bg-[#111B2D] p-6">
-              <p className="text-sm text-gray-400">{card.label}</p>
-              <p className="mt-3 text-3xl font-bold text-lime-300">{card.value}</p>
-              <p className="mt-2 text-xs text-gray-500">{card.detail}</p>
-            </div>
-          ))}
-        </section>
-        <section className="mt-8 rounded-2xl border border-gray-800 bg-[#111B2D] p-6">
-          <h2 className="text-xl font-bold">Booking Overview</h2>
-          <p className="mt-1 text-sm text-gray-400">Your current repair journey at a glance.</p>
-          <div className="mt-5 space-y-4">
-            {[
-              ["Active", stats.active],
-              ["Completed", stats.completed],
-              ["Payment due", stats.unpaid],
-            ].map(([label, value]) => <div key={String(label)}>
-              <div className="mb-2 flex justify-between text-sm"><span className="text-gray-300">{label}</span><span className="text-lime-300">{value}</span></div>
-              <div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-lime-300" style={{ width: `${stats.total ? Math.max(2, Number(value) / stats.total * 100) : 0}%` }} /></div>
-            </div>)}
-          </div>
-        </section>
-        <section className="mt-8 grid gap-6 md:grid-cols-2">
-          <Link href="/customer/bookings" className="rounded-2xl border border-gray-800 bg-[#111B2D] p-8 transition hover:border-lime-300">
-            <p className="text-gray-400">My Bookings</p>
-            <h2 className="mt-4 text-2xl font-bold">View bookings →</h2>
-            <p className="mt-3 text-gray-400">Track repair status, cancel pending requests, and pay completed bookings.</p>
-          </Link>
-          <Link href="/customer/payments" className="rounded-2xl border border-gray-800 bg-[#111B2D] p-8 transition hover:border-lime-300"><p className="text-gray-400">Payments</p><h2 className="mt-4 text-2xl font-bold">View payment history →</h2><p className="mt-3 text-gray-400">Review your Stripe receipts and paid transactions.</p></Link>
-          <Link href="/services" className="rounded-2xl border border-gray-800 bg-[#111B2D] p-8 transition hover:border-lime-300">
-            <p className="text-gray-400">Explore Services</p>
-            <h2 className="mt-4 text-2xl font-bold">Book a repair →</h2>
-            <p className="mt-3 text-gray-400">Find a technician for your device or appliance.</p>
-          </Link>
-        </section>
+  return <main className="min-h-screen bg-[#080D19] px-5 py-8 text-white md:px-8 md:py-12">
+    <div className="mx-auto max-w-7xl">
+      <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(ellipse_at_85%_10%,rgba(184,243,107,.16),transparent_38%),linear-gradient(120deg,#142238,#0D1727_65%,#101B2B)] p-7 md:p-10">
+        <div className="flex flex-col justify-between gap-7 md:flex-row md:items-end">
+          <div><div className="inline-flex items-center gap-2 rounded-full border border-[#B8F36B]/20 bg-[#B8F36B]/10 px-3 py-1.5 text-[11px] font-extrabold tracking-[.18em] text-[#B8F36B]">CUSTOMER SPACE</div><h1 className="mt-5 text-3xl font-black tracking-tight md:text-5xl">Welcome back, {user.name || "Customer"}<span className="text-[#B8F36B]">.</span></h1><p className="mt-3 text-sm text-slate-300">{user.email} · Here’s what’s happening with your repairs.</p></div>
+          <Link href="/services" className="inline-flex items-center justify-center rounded-xl bg-[#B8F36B] px-5 py-3 text-sm font-extrabold text-[#080D19] transition hover:-translate-y-0.5 hover:bg-white">＋ Book a repair</Link>
+        </div>
       </div>
-    </main>
-  );
+      {error && <p role="alert" className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">{error}</p>}
+      <section className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{cards.map(card=><article key={card.label} className={`relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br ${card.color} bg-[#111B2D] p-6`}><div className="flex items-center justify-between"><p className="text-sm font-semibold text-slate-300">{card.label}</p><span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-xl text-[#B8F36B]">{card.icon}</span></div><p className="mt-5 text-4xl font-black tracking-tight">{card.value}</p><p className="mt-2 text-xs text-slate-400">{card.note}</p></article>)}</section>
+      <section className="mt-8 grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
+        <div className="rounded-2xl border border-white/10 bg-[#111B2D] p-6 md:p-7"><div className="flex items-center justify-between gap-3"><div><h2 className="text-lg font-extrabold">Your repair overview</h2><p className="mt-1 text-sm text-slate-400">A quick look at your current activity.</p></div><span className="rounded-full bg-white/5 px-3 py-1 text-xs text-slate-400">Live summary</span></div><div className="mt-7 space-y-5">{[["Active repairs",stats.active],["Completed repairs",stats.completed],["Payments due",stats.unpaid]].map(([label,value])=><div key={String(label)}><div className="mb-2 flex justify-between text-sm"><span className="text-slate-300">{label}</span><span className="font-bold text-[#B8F36B]">{value}</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#B8F36B]" style={{width:`${stats.total ? Math.max(2,Number(value)/stats.total*100) : 0}%`}}/></div></div>)}</div></div>
+        <div className="rounded-2xl border border-[#B8F36B]/20 bg-[#B8F36B]/[.07] p-6 md:p-7"><span className="text-3xl">🛠️</span><h2 className="mt-4 text-xl font-extrabold">Need something fixed?</h2><p className="mt-2 text-sm leading-6 text-slate-300">Browse available services and connect with a technician who can help.</p><Link href="/services" className="mt-6 inline-flex rounded-xl bg-[#B8F36B] px-5 py-3 text-sm font-extrabold text-[#080D19] hover:bg-white">Find a technician ↗</Link></div>
+      </section>
+      <section className="mt-9"><div className="mb-5"><p className="text-xs font-extrabold tracking-[.2em] text-[#B8F36B]">QUICK ACCESS</p><h2 className="mt-2 text-2xl font-black">Make yourself at home.</h2></div><div className="grid gap-4 md:grid-cols-3">{shortcuts.map(item=><Link key={item.href} href={item.href} className="group rounded-2xl border border-white/10 bg-[#111B2D] p-6 transition hover:-translate-y-1 hover:border-[#B8F36B]/50"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#B8F36B]/10 text-2xl text-[#B8F36B]">{item.icon}</span><h3 className="mt-5 text-lg font-extrabold">{item.title}</h3><p className="mt-2 min-h-12 text-sm leading-6 text-slate-400">{item.detail}</p><p className="mt-5 text-sm font-bold text-[#B8F36B]">{item.action} ↗</p></Link>)}</div></section>
+    </div>
+  </main>;
 }
