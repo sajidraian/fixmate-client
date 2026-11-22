@@ -28,9 +28,17 @@ const db = client.db(process.env.DB_NAME || "fixmate");
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
+// Keep production OAuth callbacks on the exact domain registered in Google Cloud.
+// Vercel preview URLs are still accepted separately through trustedOrigins below.
+const configuredAuthUrl = process.env.BETTER_AUTH_URL?.trim().replace(/\\/+$/, "");
+const authBaseURL =
+  process.env.NODE_ENV === "production"
+    ? "https://fixmate-client-psi.vercel.app"
+    : configuredAuthUrl || "http://localhost:3000";
+
 export const auth = betterAuth({
   database: mongodbAdapter(db, { client }),
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  baseURL: authBaseURL,
   secret: authSecret,
   trustedOrigins: [
     "https://fixmate-client-psi.vercel.app",
