@@ -33,7 +33,7 @@ export default function ServiceDetailsPage() {
         setError("");
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/services/${id}`
+          `${process.env.NEXT_PUBLIC_API_URL || "https://fixmate-server-x1b6.onrender.com"}/api/services/${id}`
         );
 
         const result = await response.json();
