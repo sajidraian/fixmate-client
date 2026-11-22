@@ -65,8 +65,12 @@ export default function LoginPage() {
         setError(authError.message || "Google sign-in failed.");
         setGoogleLoading(false);
       }
-    } catch {
-      setError("Unable to sign in with Google. Please try again.");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to sign in with Google. Please try again."
+      );
       setGoogleLoading(false);
     }
   };
