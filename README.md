@@ -30,6 +30,7 @@ Discover trusted technicians. Book a repair in minutes. Follow every update. Pay
 - [Getting started](#-getting-started)
 - [Roles and booking journey](#-roles-and-access)
 - [Assignment features](#-assignment-optional-features)
+- [Real-time notifications](#-real-time-notifications)
 - [Testing and deployment](#-testing-and-ci)
 
 ## ✨ Overview
@@ -82,6 +83,7 @@ Discover trusted technicians. Book a repair in minutes. Follow every update. Pay
 - Responsive interface with dark/light theme support.
 - Paginated service, booking, and admin lists.
 - Toast notifications and confirmation dialogs for important actions.
+- Real-time in-app notifications with an unread badge, notification history, and live updates through Server-Sent Events (SSE).
 
 ## 🧰 Tech stack
 
@@ -203,6 +205,16 @@ Public registration is limited to customer and technician roles. Admin accounts 
 6. The customer pays through Stripe Checkout.
 7. The customer can view the invoice and submit a review.
 
+## 🔔 Real-time notifications
+
+FixMate keeps customers, technicians, and admins informed as repair work moves forward. The notification bell in the main navigation displays unread updates and opens the user's notification history.
+
+- Customers are notified when a technician accepts or rejects a request, changes its status, or completes the job.
+- Technicians are notified when a customer creates a booking for one of their services.
+- Technicians are notified when an admin approves or rejects one of their service listings.
+- Notifications update live through an authenticated Server-Sent Events (SSE) connection, with automatic reconnection when the connection is interrupted.
+- Users can mark an individual notification or all notifications as read. Notification history is retained with the user's account (up to the latest 100 entries).
+
 ## 🌙 Extra touches that complete the experience
 
 - **Reviews & Ratings:** One 1–5 star review with a comment for an eligible paid, completed booking.
@@ -254,6 +266,3 @@ The production frontend is hosted on Vercel.
 
 This repository currently does not declare an open-source license. Contact the repository owner before redistributing or reusing the code.
 
-## Real-time Notifications
-
-Signed-in users receive live in-app notifications for new booking requests, booking status changes, booking cancellations, and service approval decisions. Use the notification bell in the main navigation to review unread updates and notification history. Notifications are retained with the user's account (up to the latest 100 entries).
