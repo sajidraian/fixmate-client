@@ -28,6 +28,15 @@ const db = client.db(process.env.DB_NAME || "fixmate");
 const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
 
+if (
+  process.env.NODE_ENV === "production" &&
+  (!googleClientId || !googleClientSecret)
+) {
+  throw new Error(
+    "FixMate Google OAuth is not configured: set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the Vercel Production environment, then redeploy."
+  );
+}
+
 // Google OAuth must always use the same canonical production origin so that
 // the OAuth state cookie is created and read on the same host.
 const productionAuthURL = "https://fixmate-client-psi.vercel.app";
@@ -50,9 +59,13 @@ export const auth = betterAuth({
   // Link Google only to an existing account with the same email address.
   // Google is trusted as the identity provider; different-email linking stays disabled.
   account: {
+    // Use database-backed OAuth state so deployments/serverless instances do
+    // not depend on one instance's transient state storage.
+    storeStateStrategy: "database",
     accountLinking: {
       enabled: true,
-      trustedProviders: ["google"],
+      // Google emails are verified by Google; allow same-email linking only.
+      // Do not force-link unverified addresses through trustedProviders.
       disableImplicitLinking: false,
       allowDifferentEmails: false,
     },
