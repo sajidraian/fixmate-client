@@ -23,6 +23,7 @@ export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const unreadCount = items.filter((item) => !item.read).length;
+  const userEmail = session?.user?.email;
 
   const loadNotifications = useCallback(async () => {
     const { data, error } = await authClient.token();
@@ -40,15 +41,15 @@ export default function NotificationBell() {
   }, []);
 
   useEffect(() => {
-    if (!session?.user) {
+    if (!userEmail) {
       setItems([]);
       return;
     }
     void loadNotifications();
-  }, [session?.user, loadNotifications]);
+  }, [userEmail, loadNotifications]);
 
   useEffect(() => {
-    if (!session?.user) return;
+    if (!userEmail) return;
     const controller = new AbortController();
 
     const connect = async () => {
@@ -106,7 +107,7 @@ export default function NotificationBell() {
 
     void connect();
     return () => controller.abort();
-  }, [session?.user]);
+  }, [userEmail]);
 
   const markRead = async (id: string) => {
     const { data, error } = await authClient.token();
@@ -124,11 +125,11 @@ export default function NotificationBell() {
     try {
       const { data, error } = await authClient.token();
       if (error || !data?.token) return;
-      await fetch(API_URL + "/api/notifications/read-all", {
+      const response = await fetch(API_URL + "/api/notifications/read-all", {
         method: "PATCH",
         headers: { Authorization: "Bearer " + data.token },
       });
-      setItems((current) => current.map((item) => ({ ...item, read: true })));
+      if (response.ok) setItems((current) => current.map((item) => ({ ...item, read: true })));
     } finally {
       setBusy(false);
     }
@@ -140,7 +141,7 @@ export default function NotificationBell() {
     router.push(item.href || "/");
   };
 
-  if (!session?.user) return null;
+  if (!userEmail) return null;
 
   return (
     <div className="relative">
