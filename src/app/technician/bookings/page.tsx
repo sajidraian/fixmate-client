@@ -38,7 +38,7 @@ const [updatingId, setUpdatingId] = useState<string | null>(null);
   useEffect(() => {
     const loadBookings = async () => {
       try {
-        const result = await authenticatedFetch("/api/bookings/technician?page=" + page + "&limit=10");
+        const result = await authenticatedFetch("/api/bookings/technician?page=" + page + "&limit=2");
         setBookings(result.data || []);
         setTotalPages(Math.max(1, Number(result.pagination?.totalPages) || 1));
       } catch (err) {
