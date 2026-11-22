@@ -38,7 +38,7 @@ export default function BookingPage() {
     const fetchService = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/services/${serviceId}`
+          `https://fixmate-server-x1b6.onrender.com/api/services/${serviceId}`
         );
 
         const result = await response.json();
