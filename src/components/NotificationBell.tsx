@@ -8,7 +8,7 @@ const PRODUCTION_API_URL = "https://fixmate-server-x1b6.onrender.com";
 // Preview deployments must opt into a staging API explicitly. Never let a
 // preview build silently write notifications to the production backend.
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\\/$/, "") ||
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
   (process.env.VERCEL_ENV === "preview" ? "" : PRODUCTION_API_URL);
 
 type NotificationItem = {
