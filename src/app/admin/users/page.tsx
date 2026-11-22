@@ -17,7 +17,7 @@ export default function AdminUsersPage(){
 
   const load=async()=>{
     try {
-      const response=await authenticatedFetch("/api/admin/users?page="+page+"&limit=10");
+      const response=await authenticatedFetch("/api/admin/users?page="+page+"&limit=2");
       setUsers(response.data||[]);
       setTotalPages(Math.max(1,Number(response.pagination?.totalPages)||1));
     } catch(e) {
