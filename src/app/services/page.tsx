@@ -47,7 +47,7 @@ export default function ServicesPage() {
         if (category !== "All") params.set("category", category);
         if (sort !== "newest") params.set("sort", sort);
         const query = params.toString();
-        const response = await fetch((process.env.NEXT_PUBLIC_API_URL || "https://fixmate-server-x1b6.onrender.com") + "/api/services" + (query ? "?" + query : ""));
+        const response = await fetch("https://fixmate-server-x1b6.onrender.com" + "/api/services" + (query ? "?" + query : ""));
 
         if (!response.ok) {
           throw new Error("Failed to fetch services");
