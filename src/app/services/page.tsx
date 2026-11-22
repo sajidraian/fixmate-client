@@ -42,7 +42,7 @@ export default function ServicesPage() {
 
         const params = new URLSearchParams();
         params.set("page", String(page));
-        params.set("limit", "9");
+        params.set("limit", "3");
         if (search.trim()) params.set("search", search.trim());
         if (category !== "All") params.set("category", category);
         if (sort !== "newest") params.set("sort", sort);
